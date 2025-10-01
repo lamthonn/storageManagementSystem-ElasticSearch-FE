@@ -1,0 +1,55 @@
+.custom-notification .ant-notification-notice-message,
+.custom-notification .ant-notification-notice-description {
+  color: white !important; /* White text */
+}
+.ant-notification .ant-progress-text {
+  color: #1677FF;
+}
+.ant-notification-notice {
+  border-radius: 5px;
+  .ant-notification-notice-message {
+    font-weight: 500;
+  }
+}
+.ant-notification-notice-warning {
+  border: 1px solid #BE5A07;
+  .ant-notification-notice-description, .ant-notification-notice-message, .ant-notification-notice-icon svg, .ant-notification-notice-close svg
+  {
+    color: #B54F0D !important;
+  }
+}
+.ant-notification-notice-error {
+  border: 1px solid #F4597A;
+  .ant-notification-notice-description, .ant-notification-notice-message, .ant-notification-notice-icon svg, .ant-notification-notice-close svg
+  {
+    color: #CB002B !important;
+  }
+}
+.ant-notification-notice-info {
+  border: 1px solid #BE5A07;
+  .ant-notification-notice-description, .ant-notification-notice-message, .ant-notification-notice-icon svg, .ant-notification-notice-close svg
+  {
+    color: black !important;
+  }
+}
+.ant-notification-notice-success {
+  border: 1px solid #85D0AD;
+  .ant-notification-notice-description, .ant-notification-notice-message, .ant-notification-notice-icon svg, .ant-notification-notice-close svg
+  {
+    color: #006735 !important;
+  }
+}
+
+.toast-icon{
+  svg{
+    font-size: 24px;
+  }
+}
+
+.ant-notification-notice-message{
+  padding-left: 5px;
+}
+
+.ant-notification-notice-description{
+  padding-left: 5px;
+}

@@ -1,0 +1,189 @@
+@import "../../styles/variables";
+
+.table-wrapper {
+  padding: 24px;
+  width: 100%;
+}
+
+.image-empty-data {
+  width: 100px;
+  height: 80px;
+}
+
+.nodata-text {
+  color: $color-default;
+}
+
+.pagination-table {
+  li {
+    border-radius: 0 !important;
+  }
+
+  .ant-pagination-prev,
+  .ant-pagination-next {
+    &:hover {
+      font-weight: normal !important;
+      border-color: $color-primary;
+      border: 1px solid var(--color-primary-5);
+      background-color: var(--color-primary-9);
+      border-radius: 6px;
+
+      span {
+        svg {
+          color: $color-primary;
+        }
+      }
+    }
+
+    &.ant-pagination-disabled {
+      span {
+        svg {
+          color: $color-border;
+        }
+      }
+
+      &:hover {
+        border-color: $color-border !important;
+      }
+    }
+
+    border: 1px solid $color-border;
+  }
+
+  .ant-pagination-item {
+    border: 1px solid $color-border;
+
+    &.ant-pagination-item-active,
+    &:hover {
+      font-weight: normal !important;
+      border-color: $color-primary;
+      border: 1px solid var(--color-primary-5);
+      background-color: var(--color-primary-9);
+      border-radius: 6px;
+
+      a {
+        color: $color-primary;
+      }
+    }
+  }
+
+  .ant-select-selector {
+    background-color: transparent !important;
+    border-radius: 0;
+  }
+
+  .ant-pagination-options-quick-jumper {
+    input {
+      background-color: transparent !important;
+      border-radius: 0;
+    }
+  }
+}
+
+
+.ant-pagination-total-text{
+  margin-inline-end: auto;
+}
+
+/* Adjust the width and height of pagination items */
+.ant-pagination-item {
+  width: 40px; /* Set the desired width */
+  height: 40px; /* Set the desired height */
+  line-height: 40px; /* Align text vertically */
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+}
+
+/* Active page style */
+.ant-pagination-item-active {
+  background-color: #1890ff; /* Highlight the active item */
+  color: #fff; /* Text color for active item */
+  border-color: #1890ff; /* Border for active item */
+}
+
+/* Adjust the prev/next button size */
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Optional: Customize hover effects */
+.ant-pagination-item:hover {
+  border-color: #40a9ff;
+  color: #40a9ff;
+}
+
+
+:where(.css-dev-only-do-not-override-11sky05).ant-pagination .ant-pagination-total-text {
+  
+  margin-inline-end: auto;
+}
+
+:where(.css-dev-only-do-not-override-12k1ldo).ant-pagination .ant-pagination-total-text {
+  margin-inline-end: auto;
+
+
+}
+
+.ant-pagination .ant-pagination-item{
+  width: 36px;
+  height: 36px;
+  margin: 0 2px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background-color: #fff;
+  font-size: 16px;
+}
+.ant-pagination .ant-pagination-item:not(.ant-pagination-item-active):hover {
+  transition: all 0.2s;
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.ant-pagination .ant-pagination-item-active{
+  border: 1px solid var(--color-primary-5);
+  background-color: var(--color-primary-9);
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  a{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.ant-pagination .ant-pagination-item a{
+  width: 36px;
+  height: 36px;
+  display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ant-pagination .ant-pagination-item a:hover{
+  width: 36px;
+  height: 36px;
+  display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ant-pagination .ant-pagination-disabled{
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ant-select .ant-select-arrow{
+  // padding-bottom: 10px;
+}

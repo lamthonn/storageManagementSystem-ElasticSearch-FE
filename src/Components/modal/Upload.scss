@@ -1,0 +1,86 @@
+.ant-upload-drag-icon{
+    display: flex;
+    justify-content: center;
+}
+.upload-dragger-container:hover{
+    border: 2px dashed var(--color-primary-5) !important;
+
+}
+
+.title-dragger-upload{
+    font-size: 20px;
+    font-family: 'Inter' 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: 700;
+}
+
+.uploaded-file-info{
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid rgb(224, 224, 224);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.download-outlined{
+    font-size: 20px;
+    color: var(--color-primary-9);
+    background-color: var(--color-primary-1);
+    border-radius: 5px;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.delete-outlined{
+    font-size: 20px;
+    margin-left: 3px;
+    color: #DA1E28;
+    background-color: #fce8e9;
+    border-radius: 5px;
+    padding: 5px;
+    cursor: pointer;
+}
+
+
+.title-modal{
+    font-size: 18px;
+}
+.uploaded-file-info{
+    display: flex;
+    flex-direction: column;
+    max-height: 180px;
+    overflow: auto;
+}
+
+.upload-item{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2px 0;
+    width: 100%;
+}
+
+.title-upload-item{
+    white-space: nowrap; /* Ensures the text stays on one line */
+  overflow: hidden;    /* Hides the overflowing text */
+  text-overflow: ellipsis; /* Adds ellipsis when the text overflows */
+  width: 100%;
+  display: block; 
+  text-align: left;
+}
+
+.upload-item-left{
+    display: flex;
+    width: 70%;
+}
+
+.icon-file-text{
+    padding: 5px;
+    background-color: #EFF6FF;
+    color: #1E3A8A;
+    border-radius: 5px;
+    margin-right: 5px;
+}
+
+.html-modal-class {
+    width: 1000px;
+}

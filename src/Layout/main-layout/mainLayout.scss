@@ -1,0 +1,18 @@
+.main-layout{
+    .footerSide{
+        text-align: right;
+        border-top: 1px solid #00276663;
+    }
+
+    .collapsed-icon{
+        font-size: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100% !important;
+        cursor: pointer;
+    }
+    .collapsed-icon:hover{
+        color: #1890ff;
+    }
+}
