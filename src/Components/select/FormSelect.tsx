@@ -111,6 +111,7 @@ const FormSelect: FunctionComponent<SelectComponentProps> = ({
   }, [filterFKState]);
 
   const getDataOptions = async (searchValue?: string) => {
+    
     setData([]);
     handleSetDataOptions && handleSetDataOptions([]);
 
@@ -132,8 +133,8 @@ const FormSelect: FunctionComponent<SelectComponentProps> = ({
       })
         .then((res: any) => {
           if (valueField && labelField) {
-            if (res.data.data) {
-              const opts = res.data.data.map((item: any) => {
+            if (res.data.items) {
+              const opts = res.data.items.map((item: any) => {
                 return {
                   ...item,
                   value: item[valueField ?? 0],

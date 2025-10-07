@@ -8,7 +8,8 @@ import { routesConfig } from "./routes";
 import QuanLyNhomNguoiDung from "../Pages/quan-tri-he-thong/quan-ly-nhom-nguoi-dung";
 import QuanLyNhatKyHeThong from "../Pages/quan-tri-he-thong/quan-ly-nhat-ky-he-thong";
 import Login from "../Pages/dang-nhap";
-import ProtectedRoute from "./PrivateRoute";
+import NotFoundPage from "../Pages/404ErrorPage";
+import ErrorPage from "../Pages/500ErrorPage";
 
 export const router = createBrowserRouter([
     {
@@ -83,5 +84,13 @@ export const router = createBrowserRouter([
                 element: <QuanLyNhatKyHeThong />,
             },
         ],
+    },
+    {
+        path: "/500",
+        element: <ErrorPage />,
+    },
+    {
+        path: "*",
+        element: <NotFoundPage />,
     },
 ])

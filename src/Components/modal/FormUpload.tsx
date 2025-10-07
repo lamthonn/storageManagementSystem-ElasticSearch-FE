@@ -35,6 +35,10 @@ import "dayjs/locale/vi";
 import FormSelect from "../select/FormSelect";
 import FormItemInput from "../form-input/FormInput";
 import TableData from "../table-data/TableData";
+import Typography from "antd/es/typography/Typography";
+import { UploadTaiLieu } from "../../services/tai-lieu";
+import { set } from "lodash";
+import { formatFileSize } from "../../Utils/common";
 type PreChildrenProps = {
   name?: string;
   props?: any;
@@ -92,6 +96,9 @@ type UploadComponentProps = {
   setLoadingParent?: (load: boolean) => void;
   // ma trận
   isDowloadFileThamDinhMaTran?: boolean;
+
+  isRefreshData: boolean;
+  setIsRefreshData: (val: boolean) => void;
 };
 
 const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
@@ -144,6 +151,8 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
   pattern,
   dataNhanXet,
   isDowloadFileThamDinhMaTran,
+  isRefreshData,
+  setIsRefreshData,
   ...rest
 }) => {
   // fix refresh data sau khi thẩm định
@@ -156,11 +165,10 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
     handleClose(true);
   };
   const restProps: any = { ...rest };
-  useEffect(() => {
-    console.log("rest::: ", rest);
-  }, [rest]);
+
+  const [mucDo, SetMucDo] = useState<any>();
+  const [phongBan, SetPhongBan] = useState<any>();
   const [dragging, setDragging] = useState(false); // Track dragging state
-  const [isOpenDetail, setIsOpenDetail] = useState<boolean>(false); // Track dragging state
   const [maxSizeConfig, setMaxSizeConfig] = useState<number>(10); // Track dragging state
   const [excelFileForDetail, setExcelFileForDetail] = useState<any>();
   const [files, setFiles] = useState<any[]>([]);
@@ -187,7 +195,6 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
     // totalFile = 1;
   } else note = [...(note ?? [])];
 
-
   const preProcessFile = async (browseFiles: File[]) => {
     setLoading?.(true);
     const selectedFiles: any[] = Array.from(browseFiles);
@@ -211,7 +218,8 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
     let filteredFiles: any[] = selectedFiles.filter((file: any) => {
       const fileExtension = file.name.split(".").pop()?.toLowerCase();
       const fileName = file.name.split(".").slice(0, -1).join("."); // Get the name without extension
-
+      console.log(validExtensions, fileExtension);
+      
       const retFileNameValid: any = validateFileName(fileName);
 
       const isValid =
@@ -223,7 +231,7 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
         retFileNameValid.ret;
       let msgValid = validExtensions.includes(fileExtension ?? "")
         ? ""
-        : "- File không đúng định dạng<br/>";
+        : "- File không đúng định dạng 0<br/>";
       msgValid +=
         (msgValid === "" ? "" : "") +
         (maxSizeConfig === 0 ||
@@ -238,16 +246,11 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
 
       file.isValid = isValid;
       file.msgValid = msgValid;
-      file.filenamesize =
-        file.name +
-        (file.size
-          ? " - " +
-            (parseFloat("" + (file.size / 1024 / 1024) * 10) / 10).toFixed(1) +
-            " Mb"
-          : "");
+      file.filenamesize = file.name + " " + formatFileSize(file.size);
+        
       return true;
     });
-    filteredFiles = [...((filteredFiles))];
+    filteredFiles = [...filteredFiles];
 
     // Check for duplicates
     const duplicates: any[] = checkDuplicates(filteredFiles, files);
@@ -288,151 +291,6 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
     }
     setLoading?.(false);
   };
-
-// const validExisting = async (filteredFiles: any[]) => {
-//   const trunk = 5 * 1024 * 1024; // 5MB per trunk
-//   return await Promise.all(
-//     filteredFiles.map(async (f: any) => {
-//       let inputFile: any = {};
-//       inputFile.folder = `ma-tran-temp\\${f.name}`; // Định dạng giống ma-tran-de
-//       inputFile.filename = f.name;
-//       inputFile.size = f.size;
-//       inputFile.command = "start";
-
-//       // Log URL để debug
-//       const startUrl = `/api/file/tep-tin/luu-tep-tin-trunk?${objectToQueryString(inputFile).replace("InputFile=folder=", "folder=")}`;
-
-//       // Gửi lệnh start
-//       const startResponse = await axiosConfig
-//         .post(startUrl, null)
-//         .then((res: any) => {
-//           console.log("Start response for ma-tran-temp:", res.data);
-//           return res.data.folder; // Giả định backend trả về folder tạm
-//         })
-//         .catch((jqXHR: any) => {
-//           console.log("Start error for ma-tran-temp:", jqXHR?.status, jqXHR?.response?.data);
-//           let response = jqXHR?.response?.data ?? jqXHR;
-//           if (response.includes(`There is not enough space on the disk`)) {
-//             response = "Máy chủ đã đầy dung lượng lưu trữ";
-//           }
-//           ShowToast(
-//             "error",
-//             "Thông báo",
-//             response ? response : "Không thể khởi tạo file trong ma-tran-temp",
-//             6
-//           );
-//           return null;
-//         });
-
-//       if (!startResponse) {
-//         f.exist = true;
-//         f.isValid = false;
-//         f.msgValid = "- Không thể khởi tạo file trên server<br/>";
-//         return f;
-//       }
-
-//       let folder = `ma-tran-temp\\${f.name}`; // Đảm bảo nhất quán với start
-//       let totalTrunk = parseInt(f.size / trunk + "");
-//       if (f.size / trunk > parseInt(f.size / trunk + "")) totalTrunk++;
-//       let strunk = "";
-//       for (let i = 0; i < totalTrunk; i++) strunk += "," + i + ",";
-
-//       // Gửi từng phần (write)
-//       for (let i = 0; i < totalTrunk; i++) {
-//         const opt_startByte = i * trunk;
-//         const opt_stopByte = (i + 1) * trunk;
-//         const start = parseInt(opt_startByte + "") || 0;
-//         const stop = parseInt(opt_stopByte + "") || f.size - 1;
-//         const blob = f.slice(start, stop + 1);
-//         const newF = new File([blob], f.name + i);
-
-//         inputFile = {};
-//         inputFile.folder = folder; // Sử dụng folder tương đối
-//         inputFile.filename = f.name;
-//         inputFile.size = f.size;
-//         inputFile.command = "write";
-//         inputFile.trunkno = i;
-//         inputFile.trunkstart = start;
-
-//         // Log URL để debug
-//         const writeUrl = `/api/file/tep-tin/luu-tep-tin-trunk?${objectToQueryString(inputFile).replace("InputFile=folder=", "folder=")}`;
-
-//         const data = new FormData();
-//         data.append("FormFile", newF);
-
-//         const writeResponse = await axiosConfigUpload
-//           .post(writeUrl, data)
-//           .then((data: any) => {
-//             console.log("Write response for ma-tran-temp:", data.data);
-//             f.trunkno = data.data.trunkno;
-//             f.trunktotal = totalTrunk;
-//             strunk = strunk.replace("," + data.data.trunkno + ",", "").replace(" ", "");
-//             return data;
-//           })
-//           .catch((jqXHR: any) => {
-//             console.log("Write error for ma-tran-temp:", jqXHR?.status, jqXHR?.response?.data);
-//             let response = jqXHR?.response?.data;
-//             if (response.includes(`There is not enough space on the disk`)) {
-//               response = "Máy chủ đã đầy dung lượng lưu trữ";
-//             }
-//             ShowToast(
-//               "error",
-//               "Thông báo",
-//               response ? response : "Không thể ghi file vào ma-tran-temp",
-//               6
-//             );
-//             return null;
-//           });
-
-//         if (!writeResponse) {
-//           f.exist = true;
-//           f.isValid = false;
-//           f.msgValid = "- Lỗi khi tải phần file<br/>";
-//           return f;
-//         }
-//       }
-
-//       // Gửi lệnh finish
-//       if (strunk === "") {
-//         inputFile.command = "finish";
-//         inputFile.folder = folder;
-//         inputFile.filename = `ma-tran-temp\\${f.name}`; // Định dạng giống ma-tran-de
-
-//         // Log URL để debug
-//         const finishUrl = `/api/file/tep-tin/luu-tep-tin-trunk?${objectToQueryString(inputFile).replace("InputFile=folder=", "folder=")}`;
-
-//         const finishResponse = await axiosConfig
-//           .post(finishUrl, null)
-//           .then((data: any) => {
-//             console.log("Finish response for ma-tran-temp:", data.data);
-//             f.exist = true;
-//             f.isValid = true;
-//             f.msgValid = "";
-//             return data;
-//           })
-//           .catch((jqXHR: any) => {
-//             console.log("Finish error for ma-tran-temp:", jqXHR?.status, jqXHR?.response?.data);
-//             let response = jqXHR?.response?.data;
-//             if (response.includes(`There is not enough space on the disk`)) {
-//               response = "Máy chủ đã đầy dung lượng lưu trữ";
-//             }
-//             ShowToast(
-//               "error",
-//               "Thông báo",
-//               response ? response : "Không thể hoàn tất file trong ma-tran-temp",
-//               6
-//             );
-//             f.exist = true;
-//             f.isValid = false;
-//             f.msgValid = "- Lỗi khi hoàn tất file<br/>";
-//             return null;
-//           });
-//       }
-
-//       return f;
-//     })
-//   );
-// };
 
   const handleChoosefile = () => {
     setLoading?.(true);
@@ -487,7 +345,7 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
     );
     if (foundPattern.length === 0) {
       ret = false;
-      msg = `- File không đúng định dạng ${newPattern.join(" hoặc ")}<br/>`;
+      msg = `- File không đúng định dạng 1 ${newPattern.join(" hoặc ")}<br/>`;
       return { ret, msg };
     }
     selectedPattern = foundPattern[0];
@@ -497,7 +355,7 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
     // console.log(`subFilename::::`, subFilename);
     if ((subPattern?.length ?? 0) !== subFilename.length) {
       ret = false;
-      msg = `- File không đúng định dạng ${pattern}<br/>`;
+      msg = `- File không đúng định dạng 2 ${pattern}<br/>`;
       return { ret, msg };
     }
     if (fileName.toLowerCase() !== _formatString(fileName)) {
@@ -805,52 +663,6 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
     }
   };
 
-  const handleDownload = (f: File) => {
-    const a = document.createElement("a"); //Create <a>
-    a.href = (BASE_URL + `/api/file/tep-tin/get-file/${template}`).replace(
-      "//api/",
-      "/api/"
-    );
-    a.download = f.name;
-    a.click();
-    ShowToast("success", "Thông báo", "Tải file thành công", 3);
-  };
-  // phục vụ tải file thẩm định ma trận
-  const handleDownloadForMaTran = async (folder: string, fileName: string) => {
-    try {
-      const response = await axiosConfig.get(
-        `/api/file/tep-tin/download-temp-file?folder=${encodeURIComponent(folder)}&filename=${encodeURIComponent(fileName)}`,
-        {
-          responseType: "blob",
-        }
-      );
-      const disposition = response.headers["content-disposition"];
-      let downloadName = fileName;
-      if (disposition && disposition.includes("filename=")) {
-        downloadName = disposition.split("filename=")[1].replace(/"/g, "");
-      }
-
-      // tạo URL blob để download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", downloadName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading file:", error);
-    }
-  };
-  //phục vụ tải file thẩm định ma trận
-  const getFileName = (filenamesize: string): string => {
-    if (!filenamesize) return "";
-    return filenamesize.split(" - ")[0]; // lấy phần trước " - "
-  };
-
-  
-
   // Handle drag-and-drop events
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -862,24 +674,6 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
   };
 
   const [excelProgress, setExcelProgress] = useState<any>({});
-  const [isModalPreview, setIsModalPreview] = useState<boolean>(false);
-  const [dataPreview, setDataPreview] = useState<boolean>(false);
-
-  //handle OK
-  const handleOkDefault = async (trangThai: "dat" | "chua-dat") => {
-    
-  };
-
-  const [disableSave, setDisableSave] = useState<boolean>(false);
-  const handleCancelDetail = () => {
-    setIsOpenDetail(false);
-    setRefreshData?.(true);
-    handleClose?.(true);
-  };
-
-  const [mapperColumns, setMapperColumns] = useState<any[]>(
-    mapper_columns ?? []
-  );
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10000);
@@ -961,24 +755,12 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
       render: (_: any, record: any, index: number) => {
         return (
           <div hidden={loading}>
+            {/* {isEditFormNew === false && ( */}
             <span
               onClick={() => {
-                console.log("Download record:", record); // 🔥 log khi tải
-                {isDowloadFileThamDinhMaTran== true? handleDownloadForMaTran("ma-tran-temp", getFileName(record.filenamesize)): handleDownload(record);}
+                handleRemoveFile(index);
               }}
             >
-              <Tooltip
-                className="tool-tip"
-                placement="bottom"
-                title="Tải xuống"
-                color={"var(--color-tooltip-bg)"}
-                key="tt-header-1"
-              >
-                <DownloadOutlined className="download-outlined" />
-              </Tooltip>
-            </span>
-            {/* {isEditFormNew === false && ( */}
-            <span onClick={() => {handleRemoveFile(index)}}>
               <Tooltip
                 className="tool-tip"
                 placement="bottom"
@@ -996,10 +778,84 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
     },
   ];
 
-  const [formPreChildrent] = Form.useForm();
+  //handle OK
+  const handleOk = () => {
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("cap_do_id", mucDo);
+    formData.append("phong_ban_id", phongBan);
+    files.forEach((file: any) => {
+      formData.append("files", file);
+    });
+    
+    UploadTaiLieu(formData)
+    .then((res) => {
+      if (res.status === 200) {
+        ShowToast("success", "Thành công", "Tải file thành công");
+        setFiles([]);
+        setExcelFileForDetail(undefined);
+        setIsRefreshData(!isRefreshData);
+        closeModalAndRefresh();
+      } else {
+        ShowToast("error", "Thất bại", res?.data?.message ?? "Lỗi hệ thống");
+      }
+    })
+    .catch((error) => {
+      console.log("error", error);
+      if(error?.response?.data?.includes("đã tồn tại trên hệ thống")){
+        ShowToast("warning", "Cảnh báo", "Tài liệu đã tồn tại trên hệ thống, vui lòng kiểm tra lại");
+      }
+      else{
+        ShowToast("error", "Thất bại", "Lỗi hệ thống");
+      }
+    })
+    .finally(() => {
+      setLoading(false);
+      setLoadingParent?.(false);
+    });
+  };
 
   return (
     <Spin spinning={false}>
+      <Row gutter={24}>
+        <Col span={24}>
+          <Typography style={{ fontSize: "18px", fontWeight: "600", color: "var(--color-primary-9)" }}>
+            Thông tin tài liệu
+          </Typography>
+        </Col>
+      </Row>
+      <Row gutter={22}>
+        <Col span={12}>
+          <FormSelect
+            selectType="selectApi"
+            label={"Mức độ bảo mật"}
+            src="api/danh-muc-cap-do/get-all?pageSize=50"
+            labelField="ten"
+            valueField="id"
+            defaultFirstOption
+            allOptionLabel=""
+            required
+            placeholder="Chọn mức độ bảo mật tài liệu"
+            value={mucDo}
+            onChange={(val: any) => SetMucDo(val)}
+          />
+        </Col>
+        <Col span={12}>
+          <FormSelect
+            selectType="selectApi"
+            label={"Phòng ban"}
+            src="api/danh-muc-phong-ban"
+            labelField="ten"
+            valueField="id"
+            defaultFirstOption
+            allOptionLabel=""
+            required
+            placeholder="Chọn phòng ban lưu trữ tài liệu"
+            value={phongBan}
+            onChange={(val: any) => SetPhongBan(val)}
+          />
+        </Col>
+      </Row>
       <div className="modal-content">
         <div className="modal-body">
           <div style={{ textAlign: "center" }}>
@@ -1067,7 +923,7 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
                 ) : (
                   ""
                 )}
-                <div style={{marginLeft:"10px"}} ></div>
+                <div style={{ marginLeft: "10px" }}></div>
                 <input
                   type="file"
                   onChange={handleFileChange}
@@ -1205,11 +1061,11 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
             variant="outlined"
             disabled={loading}
             onClick={() => handleClose(true)}
-          >Đóng</Button>
-          
-          <ButtonCustom 
-            text="Tải lên"
-          />
+          >
+            Đóng
+          </Button>
+
+          <ButtonCustom text="Tải lên" onClick={handleOk} />
         </div>
       </div>
     </Spin>
