@@ -89,7 +89,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
   const downloadFile = async (record: any) => {
     try {
       setLoading(true)      
-      const response = await DownloadFile(record.thu_muc_id);
+      const response = await DownloadFile(record.id);
       if (!response) {
         alert("Không thể tải file");
         return;
