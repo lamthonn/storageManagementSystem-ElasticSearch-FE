@@ -7,6 +7,7 @@ import ShowToast from "../../../Components/show-toast/ShowToast";
 
 type ModalThemMoiThuMucProps = {
   isOpenModal: boolean;
+  thu_muc_id?: string;
   setIsOpenModal: (val: boolean) => void;
   isRefreshData: boolean;
   setIsRefreshData: (val: boolean) => void;
@@ -14,6 +15,7 @@ type ModalThemMoiThuMucProps = {
 
 const ModalThemMoiThuMuc: React.FC<ModalThemMoiThuMucProps> = ({
   isOpenModal,
+  thu_muc_id,
   setIsOpenModal,
   isRefreshData,
   setIsRefreshData,
@@ -25,7 +27,8 @@ const ModalThemMoiThuMuc: React.FC<ModalThemMoiThuMucProps> = ({
   const handleAddThuMuc =async () => {
     setLoading(true);
     var data = {
-      ten: newFolder
+      ten: newFolder,
+      thu_muc_cha_id: thu_muc_id || null,
     }
 
     await addThuMuc(data)

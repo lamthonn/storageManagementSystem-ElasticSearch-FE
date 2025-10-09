@@ -19,3 +19,9 @@ export const deleteNguoiDung = async (id:any) => {
 export const getNguoiDungById = async (id:any) => {
   return await axiosConfig.get(`api/nguoi-dung/get-by-id?id=${id}`);
 };
+export const GetColleague = async (id:any, tai_lieu_id:any) => {
+  return await axiosConfig.get(`api/nguoi-dung/get-colleague?nguoi_dung_id=${id}&tai_lieu_id=${tai_lieu_id}`);
+};
+export const GetUserByDoc = async (tai_lieu_id:any) => {
+  return await axiosConfig.get(`api/nguoi-dung/get-user-by-doc?tai_lieu_id=${tai_lieu_id}`);
+};

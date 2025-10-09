@@ -15,7 +15,8 @@ import { routesConfig } from '../../Routers/routes';
 const { Content, Sider } = Layout;
 
 interface MainLayoutProps {
-  breadcrumb?: string[];
+  breadcrumb?: string[] | React.ReactNode[];
+  children?: React.ReactNode;
 }
 
 interface AuthInterface extends JwtPayload {
@@ -23,7 +24,8 @@ interface AuthInterface extends JwtPayload {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({
-  breadcrumb
+  breadcrumb,
+  children
 }) => {
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -103,8 +105,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({
           </Sider>
           <Layout style={{ padding: '0 24px 24px' }}>
             <Breadcrumb
-              items={breadcrumb?.map((item:string) => ({ title: item })) || []}
+              items={breadcrumb?.map((item:any) => ({ title: item })) || []}
               style={{ margin: '16px 0' }}
+
             />
             <Content
               style={{
@@ -115,7 +118,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
                 borderRadius: borderRadiusLG,
               }}
             >
-                <Outlet />
+                {children ? children : <Outlet />}
             </Content>
           </Layout>
         </Layout>

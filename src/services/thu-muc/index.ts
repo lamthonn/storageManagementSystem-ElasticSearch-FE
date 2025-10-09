@@ -28,6 +28,12 @@ export const deleteThuMuc = async (id:any) => {
     }
 };
 
+export const getManyFolder = async (ids:any) => {
+    if (true) {
+        return await axiosConfig.post(`api/thu-muc/get-many`, ids);
+    }
+};
+
 export const getAllThuMuc = async (data?: any) => {
     const token = localStorage.getItem("auth");
     if (token) {

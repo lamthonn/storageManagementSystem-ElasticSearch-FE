@@ -96,6 +96,7 @@ type UploadComponentProps = {
   setLoadingParent?: (load: boolean) => void;
   // ma trận
   isDowloadFileThamDinhMaTran?: boolean;
+  thu_muc_id?: string;
 
   isRefreshData: boolean;
   setIsRefreshData: (val: boolean) => void;
@@ -103,6 +104,7 @@ type UploadComponentProps = {
 
 const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
   title,
+  thu_muc_id,
   setLoadingParent,
   rowPreChildren = 3,
   type,
@@ -784,6 +786,9 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
     const formData = new FormData();
     formData.append("cap_do_id", mucDo);
     formData.append("phong_ban_id", phongBan);
+    if(thu_muc_id){
+      formData.append("thu_muc_id", thu_muc_id);
+    }
     files.forEach((file: any) => {
       formData.append("files", file);
     });

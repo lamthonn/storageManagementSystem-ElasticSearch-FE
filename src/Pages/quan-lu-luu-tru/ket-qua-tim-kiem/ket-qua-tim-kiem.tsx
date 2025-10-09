@@ -1,7 +1,27 @@
-import React, { use, useEffect } from "react";
+import React, { use, useEffect, useState } from "react";
 import UploadFileCustom from "../../../Components/modal/FormUpload";
-import { Button, Collapse, Dropdown, Form, Input, Modal, Space } from "antd";
-import { FolderOutlined, EllipsisOutlined, MoreOutlined, FileOutlined, FileWordOutlined, FilePdfOutlined, FileExcelOutlined, FileImageOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Collapse,
+  Dropdown,
+  Form,
+  Input,
+  Modal,
+  Space,
+  Tag,
+  Typography,
+} from "antd";
+import {
+  FolderOutlined,
+  EllipsisOutlined,
+  MoreOutlined,
+  FileOutlined,
+  FileWordOutlined,
+  FilePdfOutlined,
+  FileExcelOutlined,
+  FileImageOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import FormAreaCustom from "../../../Components/text-area/FormTextArea";
 import ModalThemMoiThuMuc from "../components/ModalThemMoiThuMuc";
 import FormSelect from "../../../Components/select/FormSelect";
@@ -10,52 +30,66 @@ import ButtonCustom from "../../../Components/button/button";
 import TableComponent from "../../../Components/table";
 import { MenuProps } from "antd/lib";
 import { formatDateTime, formatFileSize } from "../../../Utils/common";
-import { DownloadFile } from "../../../services/tai-lieu";
+import { DownloadFile, HandleShareFile } from "../../../services/tai-lieu";
 import ShowToast from "../../../Components/show-toast/ShowToast";
+import { jwtDecode, JwtPayload } from "jwt-decode";
+import { GetUserByDoc } from "../../../services/nguoi-dung";
 
 type KetQuaTimKiemProps = {
-    queryParams: any;
-    perms: string[];
-    isRefreshData: boolean;
-    formEdit: any;
-    isOpenModalEdit: boolean;
-    formView: any;
-    isOpenModalView: boolean;
-    setIsOpenModalView: React.Dispatch<React.SetStateAction<boolean>>;
-    setIsRefreshData: React.Dispatch<React.SetStateAction<boolean>>;
-    setIsOpenModalEdit: React.Dispatch<React.SetStateAction<boolean>>;
-    handleEdit: () => void;
-    setSelectedRowKeys: (selectedRowKeys: React.Key[]) => void;
-    handleOpenViewModal: (record: any) => void;
-    handleOpenEditModal: (record: any) => void;
-    handleDeleteConfirm: (record: any) => void;
+  thu_muc_id?: any;
+  userName: any;
+  userId: any;
+  queryParams: any;
+  src: string;
+  perms: string[];
+  isRefreshData: boolean;
+  formEdit: any;
+  isOpenModalEdit: boolean;
+  formView: any;
+  isOpenModalView: boolean;
+  setIsOpenModalView: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRefreshData: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsOpenModalEdit: React.Dispatch<React.SetStateAction<boolean>>;
+  handleEdit: () => void;
+  setSelectedRowKeys: (selectedRowKeys: React.Key[]) => void;
+  handleOpenViewModal: (record: any) => void;
+  handleOpenEditModal: (record: any) => void;
+  handleDeleteConfirm: (record: any) => void;
 };
+
 const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
-    queryParams,
-    perms,
-    isRefreshData,
-    formEdit,
-    isOpenModalEdit,
-    formView,
-    isOpenModalView,
+  queryParams,
+  thu_muc_id,
+  userName,
+  userId,
+  perms,
+  isRefreshData,
+  formEdit,
+  isOpenModalEdit,
+  formView,
+  isOpenModalView,
+  src,
 
-    setIsRefreshData,
-    setIsOpenModalView,
-    setIsOpenModalEdit,
-    handleEdit,
-    setSelectedRowKeys,
-    handleOpenViewModal,
-    handleOpenEditModal,
-    handleDeleteConfirm,
+  setIsRefreshData,
+  setIsOpenModalView,
+  setIsOpenModalEdit,
+  handleEdit,
+  setSelectedRowKeys,
+  handleOpenViewModal,
+  handleOpenEditModal,
+  handleDeleteConfirm,
 }) => {
-
-  useEffect(()=> {
+  //state
+  const [loading, setLoading] = useState<boolean>(false);
+  useEffect(() => {
     setIsRefreshData((prev) => !prev);
-  },[queryParams])
+  }, [queryParams]);
 
+  // hàm download file
   const downloadFile = async (record: any) => {
     try {
-      const response = await DownloadFile(record.id);
+      setLoading(true)      
+      const response = await DownloadFile(record.thu_muc_id);
       if (!response) {
         alert("Không thể tải file");
         return;
@@ -77,11 +111,53 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
       // ✅ Dọn dẹp
       a.remove();
       window.URL.revokeObjectURL(url);
+      setLoading(false)      
+
     } catch (error) {
-      ShowToast("error","Lỗi","Đã xảy ra lỗi khi tải file!", 3);
+      ShowToast("error", "Lỗi", "Đã xảy ra lỗi khi tải file!", 3);
     }
   };
 
+  //hàm chia sẻ file
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareFile, setShareFile] = useState<any>(null);
+  const [lstUserInFile, setLstUserInFile] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<any[]>([]);
+  const handleShareFile = (record: any) => {
+    setLoading(true);
+    setShareFile(record);
+    setIsShareModalOpen(true);
+    GetUserByDoc(record.id)
+      .then((res: any) => {
+        setLstUserInFile(res.data);
+      })
+      .catch((er: any) => {
+        ShowToast("error", "Lỗi", "Có lỗi xảy ra", 3);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+  const hanldeOkShareDoc = () => {
+    setLoading(true);
+    var data = {
+      ds_nguoi_dung: selectedUser,
+      tai_lieu_id: shareFile.id,
+    };
+    HandleShareFile(data)
+      .then((res: any) => {
+        setSelectedUser([]);
+        setIsShareModalOpen(false);
+      })
+      .catch((err: any) => {
+        ShowToast("error", "Lỗi", "Có lỗi xảy ra", 3);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  // hàm get icon
   const getIconByExtension = (extension: string) => {
     switch (extension.toLowerCase()) {
       case ".docx":
@@ -100,6 +176,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
         return <FileOutlined />;
     }
   };
+
   const column = [
     {
       title: "Tài liệu",
@@ -107,7 +184,16 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
       key: "ten",
       width: "27%",
       render: (data: any, record: any, index: number) => {
-        return <span>{record.is_folder ? <FolderOutlined /> : getIconByExtension(record.extension)} {data}</span>;
+        return (
+          <span>
+            {record.is_folder ? (
+              <FolderOutlined />
+            ) : (
+              getIconByExtension(record.extension)
+            )}{" "}
+            {data}
+          </span>
+        );
       },
     },
     {
@@ -115,7 +201,11 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
       dataIndex: "ten_chu_so_huu",
       key: "ten_chu_so_huu",
       render: (data: any, __: any, index: number) => {
-        return <span><UserOutlined /> {data}</span>;
+        return (
+          <span>
+            <UserOutlined /> {data}
+          </span>
+        );
       },
       width: "15%",
     },
@@ -152,27 +242,39 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
       width: "15%",
       fixed: "right" as "right",
       render: (text: any, record: any) => {
+        console.log("record:: ", record);
+        
         const menuItems: MenuProps["items"] = [
-          perms.includes("PERM_VIEW") && record.is_folder !== true && {
+          perms.includes("PERM_VIEW") && {
             key: "view",
             label: "Xem trước",
           },
-          perms.includes("PERM_EDIT") && record.is_folder !== true && {
-            key: "edit",
-            label: "Sửa tài liệu",
-          },
-          perms.includes("PERM_DOWNLOAD") && record.is_folder !== true && {
+          perms.includes("PERM_EDIT") &&
+            record.ten_chu_so_huu === userName && {
+              key: "edit",
+              label: "Sửa tài liệu",
+            },
+          {
             key: "download",
-            label: <span onClick={() => downloadFile(record.id)}>Tải tài liệu xuống</span>,
+            label: (
+              <span onClick={() => downloadFile(record)}>
+                Tải tài liệu xuống
+              </span>
+            ),
           },
-          perms.includes("PERM_SHARE") && record.is_folder !== true && {
+          record.ten_chu_so_huu === userName && {
             key: "share",
-            label: <span>Chia sẻ tài liệu</span>,
+            label: (
+              <span onClick={() => handleShareFile(record)}>
+                Chia sẻ tài liệu
+              </span>
+            ),
           },
-          perms.includes("PERM_DELETE") && record.is_folder !== true && {
-            key: "delete",
-            label: <span style={{ color: "red" }}>Xóa tài liệu</span>,
-          },
+          perms.includes("PERM_DELETE") &&
+            record.ten_chu_so_huu === userName && {
+              key: "delete",
+              label: <span style={{ color: "red" }}>Xóa tài liệu</span>,
+            },
         ].filter(Boolean) as MenuProps["items"];
 
         const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
@@ -190,12 +292,14 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
         };
 
         return (
-          record.is_folder !== true && <Dropdown
-            menu={{ items: menuItems, onClick: handleMenuClick }}
-            trigger={["click"]}
-          >
-            <Button type="text" icon={<MoreOutlined />} />
-          </Dropdown>
+          record.is_folder !== true && (
+            <Dropdown
+              menu={{ items: menuItems, onClick: handleMenuClick }}
+              trigger={["click"]}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          )
         );
       },
     },
@@ -203,89 +307,11 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
 
   return (
     <div>
-      {/* DS thư mục */}
-      {/* <Collapse
-        bordered={false}
-        style={{ marginBottom: "10px", backgroundColor: "transparent" }}
-        defaultActiveKey={["ds-thu-muc"]}
-        items={[
-          {
-            key: "ds-thu-muc",
-            label: "Danh sách thư mục",
-            children: (
-              <div className="folder-list">
-                {dsThuMuc.map((item: any) => {
-                  return (
-                    <div
-                      className="folder-item"
-                      onClick={() => handleChooseFolder(item)}
-                    >
-                      <div style={{ display: "flex" }}>
-                        <FolderOutlined />
-                        {editingFolderId === item.id ? (
-                          <Input
-                            autoFocus
-                            value={curentFolderName}
-                            onChange={(e) =>
-                              setCurentFolderName(e.target.value)
-                            }
-                            onBlur={async () => {
-                              if (
-                                curentFolderName.trim() &&
-                                curentFolderName !== item.ten
-                              ) {
-                                await updateThuMuc(item.id, {
-                                  id: item.id,
-                                  ten: curentFolderName,
-                                });
-                                setIsRefreshData((prev) => !prev);
-                              }
-                              setEditingFolderId(null);
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                (e.target as HTMLInputElement).blur();
-                              }
-                            }}
-                          />
-                        ) : (
-                          <span
-                            onDoubleClick={() => {
-                              setCurentFolderName(item.ten);
-                              setEditingFolderId(item.id);
-                            }}
-                            style={{ marginLeft: "7px" }}
-                          >
-                            {item.ten}
-                          </span>
-                        )}
-                      </div>
-
-                      <Dropdown menu={menuPropsFolder} trigger={["click"]}>
-                        <Button
-                          variant="solid"
-                          type="text"
-                          className="iconMore"
-                          onClick={() => setCurrentFolderAction(item)}
-                        >
-                          <Space>
-                            <EllipsisOutlined />
-                          </Space>
-                        </Button>
-                      </Dropdown>
-                    </div>
-                  );
-                })}
-              </div>
-            ),
-          },
-        ]}
-      /> */}
       {/* table Tài liệu*/}
       <TableComponent
         refreshData={isRefreshData}
         columns={column}
-        src="api/quan-ly-tai-lieu/advanced-search"
+        src={src}
         request={queryParams}
         rowSelection={{
           type: "checkbox",
@@ -402,6 +428,58 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
             <FormAreaCustom label="Mô tả" rows={4} />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Modal chia sẻ file */}
+      <Modal
+        open={isShareModalOpen}
+        width={600}
+        title={`Chia sẻ "${shareFile ? shareFile.ten : ""}"`}
+        centered
+        onCancel={() => setIsShareModalOpen(false)}
+        okText="Chia sẻ"
+        cancelText="Hủy"
+        onOk={() => {
+          hanldeOkShareDoc();
+        }}
+      >
+        <FormSelect
+          selectType="selectApi"
+          src={`api/nguoi-dung/get-colleague?nguoi_dung_id=${userId}&tai_lieu_id=${
+            shareFile ? shareFile.id : ""
+          }`}
+          labelField="ten"
+          valueField={"id"}
+          placeholder="Thêm người"
+          style={{ width: "100%" }}
+          mode="multiple"
+          click_to_reload
+          onChange={setSelectedUser}
+        />
+        <div>
+          <Typography.Title level={5}>
+            Những người có quyền truy cập
+          </Typography.Title>
+          {/* // danh sách người được chia sẻ */}
+          {lstUserInFile.map((item: any) => {
+            return (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  margin: "5px 0",
+                  padding: "3px 0",
+                  borderBottom: "1px solid #d9d9d999",
+                }}
+              >
+                {item.ten}
+
+                {/* <DeleteOutlined className="delete-outlined" /> */}
+                <Tag color="geekblue">{item.ten_nhom_nguoi_dung}</Tag>
+              </div>
+            );
+          })}
+        </div>
       </Modal>
     </div>
   );

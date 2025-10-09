@@ -9,6 +9,7 @@ import {
   Row,
   Space,
   Spin,
+  Tag,
 } from "antd";
 import {
   ControlOutlined,
@@ -18,6 +19,7 @@ import {
   FileAddOutlined,
   EllipsisOutlined,
   MoreOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { Dayjs } from "dayjs";
@@ -32,30 +34,37 @@ import FormItemInput from "../../Components/form-input/FormInput";
 import FormAreaCustom from "../../Components/text-area/FormTextArea";
 import UploadFileCustom from "../../Components/modal/FormUpload";
 import "./QuanLyLuuTru.scss";
-import { MenuProps } from "antd/lib";
+import { MenuProps, Typography } from "antd/lib";
 import ModalThemMoiThuMuc from "./components/ModalThemMoiThuMuc";
 import {
   deleteThuMuc,
   getAllThuMuc,
   updateThuMuc,
 } from "../../services/thu-muc";
-import { AdvancedSearch, DownloadFile, GetAllTaiLieu } from "../../services/tai-lieu";
+import { AdvancedSearch, DownloadFile, GetAllTaiLieu, HandleShareFile } from "../../services/tai-lieu";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import ManHinhDefault from "./man-hinh-chinh";
 import KetQuaTimKiem from "./ket-qua-tim-kiem/ket-qua-tim-kiem";
+import { useNavigate } from "react-router-dom";
+import { GetUserByDoc } from "../../services/nguoi-dung";
 
 interface AuthInterface extends JwtPayload {
   id: string;
+  tai_khoan: string;
 }
 
 const QuanLyLuuTru = () => {
+  const navigate = useNavigate();
+  
   //thông tin người dùng
   const [useId, setUserId] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
   useEffect(() => {
     const token = localStorage.getItem("auth");
     if (token) {
       const decodeToken: AuthInterface = jwtDecode(token);
       setUserId(decodeToken.id);
+      setUserName(decodeToken.tai_khoan);
     }
   }, []);
   //state
@@ -67,13 +76,21 @@ const QuanLyLuuTru = () => {
   const [isOpenModalEdit, setIsOpenModalEdit] = useState<boolean>(false);
   const [isOpenModalDelete, setIsOpenModalDelete] = useState<boolean>(false);
   const [isRefreshData, setIsRefreshData] = useState<boolean>(false);
-
-  //thư mục
   const [dsThuMuc, setDsThuMuc] = useState<any[]>([]);
   const [dsTaiLieu, setDsTaiLieu] = useState<any[]>([]);
 
-  const [isOpenModalAddFolder, setIsOpenModalAddFolder] =
-    useState<boolean>(false);
+  //data tìm kiếm nâng cao
+  const [dataAdvancedSearch, setDataAdvancedSearch] = useState<any>();
+  //search state
+  const [keySearch, setKeySearch] = useState<string>("");
+  const [loaiTaiLieu, setLoaiTaiLieu] = useState<number | null>(null);
+  const [trangThai, setTrangThai] = useState<number | null>(null);
+  const [owner, setOwner] = useState<any | null>(null);
+  const [keyWord, setKeyWord] = useState<string | undefined>(undefined);
+  const [fileName, setFileName] = useState<string | undefined>(undefined);
+  const [ngayTao, setNgayTao] = useState<[Dayjs, Dayjs] | null>(null);
+  const [ngayChinhSua, setNgayChinhSua] = useState<[Dayjs, Dayjs] | null>(null);
+  const [isOpenModalAddFolder, setIsOpenModalAddFolder] = useState<boolean>(false);
 
   const getThuMuc = () => {
     getAllThuMuc()
@@ -106,16 +123,6 @@ const QuanLyLuuTru = () => {
     getThuMuc();
     getTaiLieu();
   }, [isRefreshData]);
-
-  const [keySearch, setKeySearch] = useState<string>("");
-  //search
-  const [loaiTaiLieu, setLoaiTaiLieu] = useState<number | null>(null);
-  const [trangThai, setTrangThai] = useState<number | null>(null);
-  const [owner, setOwner] = useState<any | null>(null);
-  const [keyWord, setKeyWord] = useState<string | undefined>(undefined);
-  const [fileName, setFileName] = useState<string | undefined>(undefined);
-  const [ngayTao, setNgayTao] = useState<[Dayjs, Dayjs] | null>(null);
-  const [ngayChinhSua, setNgayChinhSua] = useState<[Dayjs, Dayjs] | null>(null);
 
   //view
   const [formView] = Form.useForm();
@@ -162,7 +169,7 @@ const QuanLyLuuTru = () => {
     onClick: handleMenuClick,
   };
 
-  //action folder
+  //#region action folder
   const [currentFolderAction, setCurrentFolderAction] = useState<any>();
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [curentFolderName, setCurentFolderName] = useState<string>("");
@@ -194,10 +201,9 @@ const QuanLyLuuTru = () => {
   };
 
   const handleChooseFolder = (folder: any) => {
-    // Logic to filter documents based on the selected folder
-    console.log("Chọn thư mục:", folder);
-    ShowToast("info", "Thông báo", `Chọn thư mục: ${folder.ten}`, 2);
+    navigate(`${folder.id}`);
   };
+  //#endregion
 
   //các hàm khác
   const handleOpenViewModal = (record: any) => {};
@@ -207,6 +213,9 @@ const QuanLyLuuTru = () => {
   const handleDeleteConfirm = async (record: any) => {};
 
   const handleEdit = async () => {};
+
+  const handleDeleteAny = () => {};
+
 
   const column = [
     {
@@ -265,7 +274,7 @@ const QuanLyLuuTru = () => {
             key: "view",
             label: "Xem trước",
           },
-          perms.includes("PERM_EDIT") && {
+          perms.includes("PERM_EDIT") && record.nguoi_tao === userName && {
             key: "edit",
             label: "Sửa tài liệu",
           },
@@ -273,11 +282,11 @@ const QuanLyLuuTru = () => {
             key: "download",
             label: <span onClick={() => downloadFile(record)}>Tải tài liệu xuống</span>,
           },
-          {
+          record.nguoi_tao === userName &&{
             key: "share",
-            label: <span>Chia sẻ tài liệu</span>,
+            label: <span onClick={() => handleShareFile(record)}>Chia sẻ tài liệu</span>,
           },
-          perms.includes("PERM_DELETE") && {
+          perms.includes("PERM_DELETE") && record.nguoi_tao === userName &&{
             key: "delete",
             label: <span style={{ color: "red" }}>Xóa tài liệu</span>,
           },
@@ -309,6 +318,46 @@ const QuanLyLuuTru = () => {
     },
   ];
 
+  // hàm chia sẻ file
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareFile, setShareFile] = useState<any>(null);
+  const [lstUserInFile, setLstUserInFile] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<any[]>([]);
+  const handleShareFile = (record: any) => {
+    setLoading(true);
+    setShareFile(record);
+    setIsShareModalOpen(true);
+    GetUserByDoc(record.id)
+    .then((res:any) => {
+      setLstUserInFile(res.data)
+    })
+    .catch((er:any)=> {
+      ShowToast("error","Lỗi", "Có lỗi xảy ra", 3)
+    })
+    .finally(()=> {
+      setLoading(false);
+    })
+  }
+
+  const hanldeOkShareDoc = () => {
+    setLoading(true)
+    var data= {
+      ds_nguoi_dung: selectedUser,
+      tai_lieu_id: shareFile.id
+    }
+    HandleShareFile(data)
+    .then((res:any)=> {
+      setSelectedUser([]);
+      setIsShareModalOpen(false)
+    })  
+    .catch((err:any)=> {
+      ShowToast("error","Lỗi", "Có lỗi xảy ra", 3)
+    })
+    .finally(()=> {
+      setLoading(false)
+    })
+  }
+
   // hàm download file
   const downloadFile = async (record: any) => {
     try {
@@ -339,13 +388,12 @@ const QuanLyLuuTru = () => {
     }
   };
 
-
   //search đơn giản
   const handleSearchBasic = () => {
-    console.log("search đơn giản:", keySearch);
     if (keySearch.trim() !== "") {
       setIsSearchStatus(true);
       var dataQuery = {
+        // thu_muc_id: thu_muc_id ? thu_muc_id : null,
         current_user_id: useId,
         keySearch: keySearch.trim(),
       };
@@ -359,8 +407,8 @@ const QuanLyLuuTru = () => {
   };
 
   //Tìm kiếm nâng cao
-  const [dataAdvancedSearch, setDataAdvancedSearch] = useState<any>();
   const handleSearchAdvanced = async () => {
+    
     setLoading(true);
     if (
       loaiTaiLieu ||
@@ -373,6 +421,7 @@ const QuanLyLuuTru = () => {
     ) {
       setIsSearchStatus(true);
       var dataQuery = {
+        // thu_muc_id: thu_muc_id ? thu_muc_id : null,
         current_user_id: useId,
         loai_tai_lieu: loaiTaiLieu,
         trang_thai: trangThai,
@@ -395,8 +444,6 @@ const QuanLyLuuTru = () => {
       setLoading(false);
     }
   };
-
-  const handleDeleteAny = () => {};
 
   return (
     <div className="quan-ly-luu-tru">
@@ -626,6 +673,9 @@ const QuanLyLuuTru = () => {
         ) : (
           <KetQuaTimKiem
             perms={perms}
+            userId={useId}
+            userName={userName}
+            src="api/quan-ly-tai-lieu/advanced-search"
             isRefreshData={isRefreshData}
             formEdit={formEdit}
             formView={formView}
@@ -668,6 +718,46 @@ const QuanLyLuuTru = () => {
           setIsOpenModal={setIsOpenModalAddFolder}
           setIsRefreshData={setIsRefreshData}
         />
+
+        {/* Modal chia sẻ file */}
+        <Modal
+          open={isShareModalOpen}
+          width={600}
+          title={`Chia sẻ "${shareFile ? shareFile.ten : ""}"`}
+          centered
+          onCancel={() => setIsShareModalOpen(false)}
+          okText="Chia sẻ"
+          cancelText="Hủy"
+          onOk={()=> {hanldeOkShareDoc()}}
+        >
+          <FormSelect 
+            selectType="selectApi"
+            src={`api/nguoi-dung/get-colleague?nguoi_dung_id=${useId}&tai_lieu_id=${shareFile ? shareFile.id : ""}`}
+            labelField="ten"
+            valueField={"id"}
+            placeholder="Thêm người"
+            style={{ width: '100%' }}
+            mode="multiple"
+            click_to_reload
+            onChange={setSelectedUser}
+          />
+          <div>
+            <Typography.Title level={5}>Những người có quyền truy cập</Typography.Title>
+            {/* // danh sách người được chia sẻ */}
+            {
+              lstUserInFile.map((item:any) => {
+                return (
+                  <div style={{display:"flex", justifyContent:"space-between", margin:"5px 0",padding:"3px 0",borderBottom:"1px solid #d9d9d999"}}>
+                    {item.ten} 
+
+                    {/* <DeleteOutlined className="delete-outlined" /> */}
+                    <Tag color="geekblue">{item.ten_nhom_nguoi_dung}</Tag>
+                  </div>
+                )
+              })
+            }
+          </div>
+        </Modal>
       </Spin>
     </div>
   );

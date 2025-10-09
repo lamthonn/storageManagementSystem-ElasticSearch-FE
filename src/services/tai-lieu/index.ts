@@ -37,3 +37,8 @@ export const DownloadFile = async (id_file: string) => {
         return await createAxios("multipart/form-data", "blob").get(`api/quan-ly-tai-lieu/download?tai_lieu_id=${id_file}`);
     }
 };
+export const HandleShareFile = async (data: any) => {
+    if(true){
+        return await axiosConfig.post(`api/quan-ly-tai-lieu/chia-se-tai-lieu`, data);
+    }
+};
