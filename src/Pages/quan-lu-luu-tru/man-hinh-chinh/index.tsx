@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import UploadFileCustom from "../../../Components/modal/FormUpload";
 import { Button, Collapse, Dropdown, Form, Input, Modal, Space } from "antd";
 import { FolderOutlined, EllipsisOutlined } from "@ant-design/icons";
@@ -8,6 +8,7 @@ import FormSelect from "../../../Components/select/FormSelect";
 import FormItemInput from "../../../Components/form-input/FormInput";
 import ButtonCustom from "../../../Components/button/button";
 import TableComponent from "../../../Components/table";
+import PdfPreview from "../components/previewComponent";
 
 type ManHinhDefaultProps = {
     dsThuMuc: any[];
@@ -18,6 +19,7 @@ type ManHinhDefaultProps = {
     isOpenModalEdit: boolean;
     menuPropsFolder: any;
     formView: any;
+    docInfor: any;
     column: any[];
     isOpenModalView: boolean;
     setCurrentFolderAction: (item: any) => void;
@@ -41,6 +43,7 @@ const ManHinhDefault: React.FC<ManHinhDefaultProps> = ({
     menuPropsFolder,
     formView,
     column,
+    docInfor,
     isOpenModalView,
     setCurrentFolderAction,
     setIsOpenModalView,
@@ -53,6 +56,10 @@ const ManHinhDefault: React.FC<ManHinhDefaultProps> = ({
     handleChooseFolder,
     setSelectedRowKeys,
 }) => {
+  const [dataDocInfor, setDocInfor] = useState<any>();
+  useEffect(()=> {
+    setDocInfor(docInfor);    
+  },[docInfor])
   return (
     <div>
       {/* DS thư mục */}
@@ -165,10 +172,10 @@ const ManHinhDefault: React.FC<ManHinhDefaultProps> = ({
 
       {/* model xem */}
       <Modal
-        title="Xem chi tiết tài liệu"
+        title={`Xem chi tiết tài liệu "${dataDocInfor ? dataDocInfor.ten: ""}"`}
         open={isOpenModalView}
         onCancel={() => setIsOpenModalView(false)}
-        width={600}
+        width={1000}
         footer={
           <div style={{ textAlign: "center" }}>
             <Button
@@ -181,92 +188,25 @@ const ManHinhDefault: React.FC<ManHinhDefaultProps> = ({
         }
         centered
       >
-        <Form layout="vertical" form={formView}>
-          <Form.Item name={"ma"}>
-            <FormItemInput
-              disabled
-              required
-              label="Mã tài liệu"
-              placeholder="Nhập mã tài liệu"
-            />
-          </Form.Item>
-          <Form.Item name={"ten"}>
-            <FormItemInput
-              disabled
-              required
-              label="Tên tài liệu"
-              placeholder="Nhập tên tài liệu"
-            />
-          </Form.Item>
-          <Form.Item name={"trang_thai"}>
-            <FormSelect
-              disabled
-              label="Trạng thái"
-              selectType="normal"
-              placeholder="Chọn trạng thái"
-              allOptionLabel=""
-              defaultFirstOption={true}
-              options={[
-                { label: "Đang hoạt động", value: true },
-                { label: "Ngừng hoạt động", value: false },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item name={"mo_ta"}>
-            <FormAreaCustom disabled label="Mô tả" rows={4} />
-          </Form.Item>
-        </Form>
+          <PdfPreview taiLieu={dataDocInfor}/>
       </Modal>
 
       {/* model Sửa */}
       <Modal
-        title="Sửa tài liệu"
+        title="Đổi tên"
         open={isOpenModalEdit}
         onCancel={() => setIsOpenModalEdit(false)}
-        width={600}
-        footer={
-          <div style={{ textAlign: "center" }}>
-            <Button
-              style={{ fontSize: "16px", marginRight: "8px" }}
-              onClick={() => setIsOpenModalEdit(false)}
-            >
-              Đóng
-            </Button>
-            <ButtonCustom text="Lưu" variant="solid" onClick={handleEdit} />
-          </div>
-        }
+        width={400}
+        okText="Lưu"
+        cancelText="Hủy"
+        onOk={handleEdit}
         centered
       >
         <Form layout="vertical" form={formEdit}>
-          <Form.Item name={"ma"}>
+          <Form.Item name={"name_change"}>
             <FormItemInput
-              required
-              label="Mã tài liệu"
-              placeholder="Nhập mã tài liệu"
+              placeholder="thay đổi tên tài liệu"
             />
-          </Form.Item>
-          <Form.Item name={"ten"}>
-            <FormItemInput
-              required
-              label="Tên tài liệu"
-              placeholder="Nhập tên tài liệu"
-            />
-          </Form.Item>
-          <Form.Item name={"trang_thai"}>
-            <FormSelect
-              label="Trạng thái"
-              selectType="normal"
-              placeholder="Chọn trạng thái"
-              allOptionLabel=""
-              defaultFirstOption={true}
-              options={[
-                { label: "Đang hoạt động", value: true },
-                { label: "Ngừng hoạt động", value: false },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item name={"mo_ta"}>
-            <FormAreaCustom label="Mô tả" rows={4} />
           </Form.Item>
         </Form>
       </Modal>

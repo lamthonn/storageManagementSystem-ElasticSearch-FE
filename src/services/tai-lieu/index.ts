@@ -42,3 +42,21 @@ export const HandleShareFile = async (data: any) => {
         return await axiosConfig.post(`api/quan-ly-tai-lieu/chia-se-tai-lieu`, data);
     }
 };
+
+export const HandleChangeName = async (data: any) => {
+    if(true){
+        return await axiosConfig.put(`api/quan-ly-tai-lieu/sua-ten-file`, data);
+    }
+};
+
+export const HandleDeleteFile = async (id: any) => {
+    if(true){
+        return await axiosConfig.put(`api/quan-ly-tai-lieu/xoa-file?id=${id}`);
+    }
+};
+
+export const HandleDeleteManyFile = async (ids: any) => {
+    if(true){
+        return await axiosConfig.put(`api/quan-ly-tai-lieu/xoa-nhieu-file`, ids);
+    }
+};

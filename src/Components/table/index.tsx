@@ -11,6 +11,7 @@ interface TableComponentProps {
   src?: string;
   request?: any;
   refreshData?: any;
+  onRow?: (data:any) => void;
 }
 
 const TableComponent: React.FC<TableComponentProps> = ({
@@ -20,7 +21,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
   rowSelection,
   src,
   request,
-  refreshData
+  refreshData,
+  onRow,
 }) => {
   const [newColumn, setNewColumn] = useState<any[]>(columns);
   const [data, setData] = useState<any[]>([]); // state data
@@ -75,6 +77,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
         pagination={false}
         rowSelection={rowSelection}
         rowKey="id"
+        onRow={onRow ? (record) => ({
+          onClick: () => onRow(record)
+        }) : undefined}
       />
       <Pagination
         style={{marginTop: '16px'}}

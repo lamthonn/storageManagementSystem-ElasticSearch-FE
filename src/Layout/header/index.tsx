@@ -4,12 +4,35 @@ import "./headerLayout.scss";
 import "../../styles/_themes.scss";
 import { useNavigate } from "react-router-dom";
 import { routesConfig } from "../../Routers/routes";
+import { jwtDecode, JwtPayload } from "jwt-decode";
+import { getNguoiDungById } from "../../services/nguoi-dung";
+import ShowToast from "../../Components/show-toast/ShowToast";
+import { useEffect, useState } from "react";
 
 const { Header } = Layout;
-
+interface AuthInterface extends JwtPayload {
+  id:string,
+}
 
 const HeaderLayout = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<any>();
+  const GetNguoiDung = () => {
+    const token = localStorage.getItem("auth");
+    if (token) {
+      const decodeToken:AuthInterface = jwtDecode(token);
+      getNguoiDungById(decodeToken.id)
+      .then((res:any)=> {
+        setUser(res.data);
+      })
+      .catch(err => {
+        ShowToast('error',"Thông báo", "Có lỗi xảy ra", 3);
+      });
+    }
+  }
+  useEffect(()=> {
+    GetNguoiDung()
+  },[])
 
   const handleLogout = () => {
     // Xử lý đăng xuất ở đây
@@ -82,8 +105,8 @@ const HeaderLayout = () => {
               lineHeight: 1.5,
             }}
           >
-            <span style={{ fontWeight: "bold" }}>Nguyễn Văn A</span>
-            <span style={{ fontSize: 12 }}>CỤC TRƯỞNG</span>
+            <span style={{ fontWeight: "bold" }}>{user ? user.ten :  ""}</span>
+            <span style={{ fontSize: 12 }}>{user ? user.ten_nhom_nguoi_dung : ""}</span>
           </div>
         </Space>
         </Dropdown>

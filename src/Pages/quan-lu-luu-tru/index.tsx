@@ -41,7 +41,7 @@ import {
   getAllThuMuc,
   updateThuMuc,
 } from "../../services/thu-muc";
-import { AdvancedSearch, DownloadFile, GetAllTaiLieu, HandleShareFile } from "../../services/tai-lieu";
+import { AdvancedSearch, DownloadFile, GetAllTaiLieu, HandleChangeName, HandleDeleteFile, HandleShareFile } from "../../services/tai-lieu";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import ManHinhDefault from "./man-hinh-chinh";
 import KetQuaTimKiem from "./ket-qua-tim-kiem/ket-qua-tim-kiem";
@@ -78,6 +78,7 @@ const QuanLyLuuTru = () => {
   const [isRefreshData, setIsRefreshData] = useState<boolean>(false);
   const [dsThuMuc, setDsThuMuc] = useState<any[]>([]);
   const [dsTaiLieu, setDsTaiLieu] = useState<any[]>([]);
+  const [recordSelected, setRecordSelected] = useState<any>(null)
 
   //data tìm kiếm nâng cao
   const [dataAdvancedSearch, setDataAdvancedSearch] = useState<any>();
@@ -91,7 +92,7 @@ const QuanLyLuuTru = () => {
   const [ngayTao, setNgayTao] = useState<[Dayjs, Dayjs] | null>(null);
   const [ngayChinhSua, setNgayChinhSua] = useState<[Dayjs, Dayjs] | null>(null);
   const [isOpenModalAddFolder, setIsOpenModalAddFolder] = useState<boolean>(false);
-
+  const [selectedRecord, setSelectedRecord] = useState<any>(); 
   const getThuMuc = () => {
     getAllThuMuc()
       .then((res: any) => {
@@ -205,14 +206,50 @@ const QuanLyLuuTru = () => {
   };
   //#endregion
 
-  //các hàm khác
-  const handleOpenViewModal = (record: any) => {};
+  const handleOpenEditModal = (record: any) => {
+    setIsOpenModalEdit(true)
+  };
 
-  const handleOpenEditModal = (record: any) => {};
+  const handleDeleteConfirm = async (record: any) => {
+    setLoading(true)
+    await HandleDeleteFile(record.id)
+    .then((res:any)=> {
+      ShowToast("success", "Thông báo", "Xóa tài liệu thành công", 3)
 
-  const handleDeleteConfirm = async (record: any) => {};
+      setIsRefreshData(!isRefreshData)
+    })
+    .catch(()=> {
+      ShowToast("error", "Thông báo", "Có lỗi xảy ra", 3)
+    })
+    .finally(()=> {
+      setLoading(false)
+    })
+  };
 
-  const handleEdit = async () => {};
+  const handleEdit = async () => {
+    setLoading(true)
+    var data = formEdit.getFieldValue("name_change")
+
+    var bodyRequest = {
+      tai_lieu_id: recordSelected.id,
+      new_name: data
+    }
+
+    await HandleChangeName(bodyRequest)
+    .then((res:any) => {
+      setRecordSelected(null);
+      setIsRefreshData(!isRefreshData);
+      setIsOpenModalEdit(false);
+      ShowToast("success", "Thông báo", "Đổi tên tài liệu thành công", 3)
+    })
+    .catch((err:any) => {
+      ShowToast("error","Lỗi", "Có lỗi xảy ra", 3)
+    })
+    .finally(()=> {
+      setLoading(false);
+    })
+    
+  };
 
   const handleDeleteAny = () => {};
 
@@ -276,7 +313,7 @@ const QuanLyLuuTru = () => {
           },
           perms.includes("PERM_EDIT") && record.nguoi_tao === userName && {
             key: "edit",
-            label: "Sửa tài liệu",
+            label: "Đổi tên",
           },
           {
             key: "download",
@@ -293,8 +330,14 @@ const QuanLyLuuTru = () => {
         ].filter(Boolean) as MenuProps["items"];
 
         const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
-          if (key === "view") handleOpenViewModal(record);
-          if (key === "edit") handleOpenEditModal(record);
+          if (key === "view") {
+            setIsOpenModalView(true);
+            setSelectedRecord(record)
+          }
+          if (key === "edit") {
+            handleOpenEditModal(record);
+            setRecordSelected(record);
+          }
           if (key === "delete") {
             Modal.confirm({
               title: "Xóa tài liệu",
@@ -649,6 +692,7 @@ const QuanLyLuuTru = () => {
         {/* table */}
         {isSearchStatus !== true ? (
           <ManHinhDefault
+            docInfor={selectedRecord ? selectedRecord : ""}
             column={column}
             setSelectedRowKeys={setSelectedRowKeys}
             isRefreshData={isRefreshData}
@@ -673,6 +717,8 @@ const QuanLyLuuTru = () => {
         ) : (
           <KetQuaTimKiem
             perms={perms}
+            docInfor={selectedRecord ? selectedRecord : ""}
+            setRecordSelected={setRecordSelected}
             userId={useId}
             userName={userName}
             src="api/quan-ly-tai-lieu/advanced-search"
@@ -688,7 +734,7 @@ const QuanLyLuuTru = () => {
             setIsOpenModalView={setIsOpenModalView}
             handleDeleteConfirm={handleDeleteConfirm}
             handleOpenEditModal={handleOpenEditModal}
-            handleOpenViewModal={handleOpenViewModal}
+            handleOpenViewModal={()=> {}}
             queryParams={dataAdvancedSearch}
           />
         )}
@@ -729,6 +775,7 @@ const QuanLyLuuTru = () => {
           okText="Chia sẻ"
           cancelText="Hủy"
           onOk={()=> {hanldeOkShareDoc()}}
+          loading={loading}
         >
           <FormSelect 
             selectType="selectApi"

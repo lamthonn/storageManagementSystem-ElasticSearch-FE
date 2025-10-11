@@ -34,9 +34,12 @@ import { DownloadFile, HandleShareFile } from "../../../services/tai-lieu";
 import ShowToast from "../../../Components/show-toast/ShowToast";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import { GetUserByDoc } from "../../../services/nguoi-dung";
+import { useLocation, useNavigate } from "react-router-dom";
+import PdfPreview from "../components/previewComponent";
 
 type KetQuaTimKiemProps = {
   thu_muc_id?: any;
+  docInfor: any;
   userName: any;
   userId: any;
   queryParams: any;
@@ -48,6 +51,7 @@ type KetQuaTimKiemProps = {
   formView: any;
   isOpenModalView: boolean;
   setIsOpenModalView: React.Dispatch<React.SetStateAction<boolean>>;
+  setRecordSelected: React.Dispatch<React.SetStateAction<any>>;
   setIsRefreshData: React.Dispatch<React.SetStateAction<boolean>>;
   setIsOpenModalEdit: React.Dispatch<React.SetStateAction<boolean>>;
   handleEdit: () => void;
@@ -61,6 +65,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
   queryParams,
   thu_muc_id,
   userName,
+  docInfor,
   userId,
   perms,
   isRefreshData,
@@ -69,7 +74,8 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
   formView,
   isOpenModalView,
   src,
-
+  
+  setRecordSelected,
   setIsRefreshData,
   setIsOpenModalView,
   setIsOpenModalEdit,
@@ -79,6 +85,8 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
   handleOpenEditModal,
   handleDeleteConfirm,
 }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   //state
   const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
@@ -177,6 +185,17 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
     }
   };
 
+  const handleRowClick = (record: any) => {
+    if(record.is_folder){
+      navigate(`${location.pathname}/${record.id}`);
+    }
+  };
+
+  const [dataDocInfor, setDocInfor] = useState<any>();
+    useEffect(()=> {
+      setDocInfor(docInfor);    
+    },[docInfor])
+
   const column = [
     {
       title: "Tài liệu",
@@ -241,9 +260,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
       key: "action",
       width: "15%",
       fixed: "right" as "right",
-      render: (text: any, record: any) => {
-        console.log("record:: ", record);
-        
+      render: (text: any, record: any) => {    
         const menuItems: MenuProps["items"] = [
           perms.includes("PERM_VIEW") && {
             key: "view",
@@ -252,7 +269,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
           perms.includes("PERM_EDIT") &&
             record.ten_chu_so_huu === userName && {
               key: "edit",
-              label: "Sửa tài liệu",
+              label: "Đổi tên",
             },
           {
             key: "download",
@@ -278,8 +295,14 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
         ].filter(Boolean) as MenuProps["items"];
 
         const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
-          if (key === "view") handleOpenViewModal(record);
-          if (key === "edit") handleOpenEditModal(record);
+          if (key === "view") {
+            setIsOpenModalView(true);
+            handleOpenViewModal(record)
+          }
+          if (key === "edit") {
+            handleOpenEditModal(record);
+            setRecordSelected(record);
+          }
           if (key === "delete") {
             Modal.confirm({
               title: "Xóa tài liệu",
@@ -320,14 +343,15 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
             setSelectedRowKeys(selectedRowKeys);
           },
         }}
+        onRow={handleRowClick}
       />
 
       {/* model xem */}
       <Modal
-        title="Xem chi tiết tài liệu"
+        title={`Xem chi tiết tài liệu "${dataDocInfor ? dataDocInfor.ten: ""}"`}
         open={isOpenModalView}
         onCancel={() => setIsOpenModalView(false)}
-        width={600}
+        width={1000}
         footer={
           <div style={{ textAlign: "center" }}>
             <Button
@@ -340,92 +364,25 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
         }
         centered
       >
-        <Form layout="vertical" form={formView}>
-          <Form.Item name={"ma"}>
-            <FormItemInput
-              disabled
-              required
-              label="Mã tài liệu"
-              placeholder="Nhập mã tài liệu"
-            />
-          </Form.Item>
-          <Form.Item name={"ten"}>
-            <FormItemInput
-              disabled
-              required
-              label="Tên tài liệu"
-              placeholder="Nhập tên tài liệu"
-            />
-          </Form.Item>
-          <Form.Item name={"trang_thai"}>
-            <FormSelect
-              disabled
-              label="Trạng thái"
-              selectType="normal"
-              placeholder="Chọn trạng thái"
-              allOptionLabel=""
-              defaultFirstOption={true}
-              options={[
-                { label: "Đang hoạt động", value: true },
-                { label: "Ngừng hoạt động", value: false },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item name={"mo_ta"}>
-            <FormAreaCustom disabled label="Mô tả" rows={4} />
-          </Form.Item>
-        </Form>
+          <PdfPreview taiLieu={dataDocInfor}/>
       </Modal>
 
       {/* model Sửa */}
       <Modal
-        title="Sửa tài liệu"
+        title="Đổi tên"
         open={isOpenModalEdit}
         onCancel={() => setIsOpenModalEdit(false)}
-        width={600}
-        footer={
-          <div style={{ textAlign: "center" }}>
-            <Button
-              style={{ fontSize: "16px", marginRight: "8px" }}
-              onClick={() => setIsOpenModalEdit(false)}
-            >
-              Đóng
-            </Button>
-            <ButtonCustom text="Lưu" variant="solid" onClick={handleEdit} />
-          </div>
-        }
+        width={400}
+        okText="Lưu"
+        cancelText="Hủy"
+        onOk={handleEdit}
         centered
       >
         <Form layout="vertical" form={formEdit}>
-          <Form.Item name={"ma"}>
+          <Form.Item name={"name_change"}>
             <FormItemInput
-              required
-              label="Mã tài liệu"
-              placeholder="Nhập mã tài liệu"
+              placeholder="thay đổi tên tài liệu"
             />
-          </Form.Item>
-          <Form.Item name={"ten"}>
-            <FormItemInput
-              required
-              label="Tên tài liệu"
-              placeholder="Nhập tên tài liệu"
-            />
-          </Form.Item>
-          <Form.Item name={"trang_thai"}>
-            <FormSelect
-              label="Trạng thái"
-              selectType="normal"
-              placeholder="Chọn trạng thái"
-              allOptionLabel=""
-              defaultFirstOption={true}
-              options={[
-                { label: "Đang hoạt động", value: true },
-                { label: "Ngừng hoạt động", value: false },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item name={"mo_ta"}>
-            <FormAreaCustom label="Mô tả" rows={4} />
           </Form.Item>
         </Form>
       </Modal>
@@ -480,6 +437,26 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
             );
           })}
         </div>
+      </Modal>
+
+      {/* model Sửa */}
+      <Modal
+        title="Đổi tên"
+        open={isOpenModalEdit}
+        onCancel={() => setIsOpenModalEdit(false)}
+        width={400}
+        okText="Lưu"
+        cancelText="Hủy"
+        onOk={handleEdit}
+        centered
+      >
+        <Form layout="vertical" form={formEdit}>
+          <Form.Item name={"name_change"}>
+            <FormItemInput
+              placeholder="thay đổi tên tài liệu"
+            />
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

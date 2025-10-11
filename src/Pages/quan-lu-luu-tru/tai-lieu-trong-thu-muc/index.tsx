@@ -39,6 +39,7 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 import KetQuaTimKiem from "../ket-qua-tim-kiem/ket-qua-tim-kiem";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "../../../Layout/main-layout";
+import { HandleChangeName } from "../../../services/tai-lieu";
 
 interface AuthInterface extends JwtPayload {
   id: string;
@@ -100,6 +101,7 @@ const TaiLieuTrongThuMuc = () => {
   const [ngayChinhSua, setNgayChinhSua] = useState<[Dayjs, Dayjs] | null>(null);
   const [isOpenModalAddFolder, setIsOpenModalAddFolder] =
     useState<boolean>(false);
+  const [recordSelected, setRecordSelected] = useState<any>(null)
 
   //view
   const [formView] = Form.useForm();
@@ -147,13 +149,39 @@ const TaiLieuTrongThuMuc = () => {
   };
 
   //các hàm khác
-  const handleOpenViewModal = (record: any) => {};
+  const handleOpenViewModal = (record: any) => {
+    setRecordSelected(record)
+  };
 
-  const handleOpenEditModal = (record: any) => {};
+  const handleOpenEditModal = (record: any) => {
+    setIsOpenModalEdit(true)
+  };
 
   const handleDeleteConfirm = async (record: any) => {};
 
-  const handleEdit = async () => {};
+  const handleEdit = async () => {
+    setLoading(true)
+    var data = formEdit.getFieldValue("name_change")
+
+    var bodyRequest = {
+      tai_lieu_id: recordSelected.id,
+      new_name: data
+    }
+
+    await HandleChangeName(bodyRequest)
+    .then((res:any) => {
+      setRecordSelected(null);
+      setIsRefreshData(!isRefreshData);
+      setIsOpenModalEdit(false);
+      ShowToast("success", "Thông báo", "Đổi tên tài liệu thành công", 3)
+    })
+    .catch((err:any) => {
+      ShowToast("error","Lỗi", "Có lỗi xảy ra", 3)
+    })
+    .finally(()=> {
+      setLoading(false);
+    })
+  };
 
   const handleDeleteAny = () => {};
 
@@ -194,24 +222,30 @@ const TaiLieuTrongThuMuc = () => {
     setDataAdvancedSearch(dataQuery);
   };
 
-  useEffect(() => {
-    //handleSearchAdvanced();
-  }, [isRefreshData]);
+  useMemo(() => {
+    handleSearchAdvanced();
+  }, [location.pathname]);
 
+  const [breadcrumb, setBreadcrumb] = useState<any[]>([])
+  useMemo(() => {
+    let parentName = "";
+    let currentName = "";
+    if (thuMucInfo.length === 1) {
+      currentName = thuMucInfo[0].ten;
+    } else if (thuMucInfo.length >= 2) {
+      parentName = thuMucInfo[thuMucInfo.length - 2].ten;
+      currentName = thuMucInfo[thuMucInfo.length - 1].ten;
+    }
+    setBreadcrumb([
+      "Trang chủ",
+      <div style={{ cursor: "pointer" }} onClick={() => {navigate(`/${routesConfig.quanLyLuuTru}`);}}>Quản lý lưu trữ</div>,
+      parentName ? <span>{parentName}</span> : null,
+      <span>{currentName}</span>
+    ].filter(Boolean));
+  }, [thuMucInfo]);
   return (
     <MainLayout
-      breadcrumb={[
-        "Trang chủ",
-        <div
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            navigate(`/${routesConfig.quanLyLuuTru}`);
-          }}
-        >
-          Quản lý lưu trữ
-        </div>,
-        thuMucInfo.map((item, index) => <div key={index} style={{ cursor: "pointer" }}>{item.ten}</div>),
-      ]}
+      breadcrumb={breadcrumb}
     >
       <div className="quan-ly-luu-tru">
         <Spin spinning={loading}>
@@ -422,6 +456,8 @@ const TaiLieuTrongThuMuc = () => {
           {/* table */}
           {thu_muc_id && useId ? (
             <KetQuaTimKiem
+              docInfor={recordSelected ? recordSelected : ""}
+              setRecordSelected={setRecordSelected}
               perms={perms}
               userId={useId}
               userName={userName}
