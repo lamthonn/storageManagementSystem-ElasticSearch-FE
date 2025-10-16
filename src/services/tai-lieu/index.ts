@@ -51,12 +51,12 @@ export const HandleChangeName = async (data: any) => {
 
 export const HandleDeleteFile = async (id: any) => {
     if(true){
-        return await axiosConfig.put(`api/quan-ly-tai-lieu/xoa-file?id=${id}`);
+        return await axiosConfig.delete(`api/quan-ly-tai-lieu/xoa-file?id=${id}`);
     }
 };
 
 export const HandleDeleteManyFile = async (ids: any) => {
     if(true){
-        return await axiosConfig.put(`api/quan-ly-tai-lieu/xoa-nhieu-file`, ids);
+        return await axiosConfig.delete(`api/quan-ly-tai-lieu/xoa-nhieu-file`, ids);
     }
 };
