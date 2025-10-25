@@ -9,6 +9,10 @@ export const formatDateTime = (dateString: string): string => {
   return dayjs(dateString).format("DD/MM/YYYY HH:mm:ss");
 };
 
+export const formatDateTimeCustom = (dateString: string, temp:string): string => {
+  return dayjs(dateString).format(temp);
+};
+
 export const getPerms = (ma:string) => {
   const token = localStorage.getItem("auth");
     if (token){

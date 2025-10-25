@@ -8,6 +8,7 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 import { getNguoiDungById } from "../../services/nguoi-dung";
 import ShowToast from "../../Components/show-toast/ShowToast";
 import { useEffect, useState } from "react";
+import ModalThongTinNguoiDung from "./components/thong-tin-nguoi-dung";
 
 const { Header } = Layout;
 interface AuthInterface extends JwtPayload {
@@ -39,8 +40,16 @@ const HeaderLayout = () => {
     navigate(routesConfig.dangNhap);
   };
 
+  const [isOpenModalUserInfor, setIsOpenModalUserInfor] = useState<boolean>(false)
+  const handleClickMenuDrop = (key:any) => {
+    if(key.key === "profile"){
+      
+      setIsOpenModalUserInfor(true)
+    }
+  }
+
   const userMenu = (
-    <Menu>
+    <Menu onClick={handleClickMenuDrop}>
       <Menu.Item key="profile">Thông tin người dùng</Menu.Item>
       <Menu.Item key="changeRole">Thay đổi quyền truy cập</Menu.Item>
       <Menu.Item key="logout" onClick={handleLogout}>Đăng xuất</Menu.Item>
@@ -59,6 +68,11 @@ const HeaderLayout = () => {
       }}
       className="header-layout"
     >
+      <ModalThongTinNguoiDung
+        isOpenModal = {isOpenModalUserInfor}
+        title="Thông tin người dùng"
+        onClose={()=> {setIsOpenModalUserInfor(false)}}
+      />
       {/* Logo và tiêu đề */}
       <div style={{ display: "flex", alignItems: "center", color: "#fff" }}>
         <img

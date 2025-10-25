@@ -39,7 +39,7 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 import KetQuaTimKiem from "../ket-qua-tim-kiem/ket-qua-tim-kiem";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "../../../Layout/main-layout";
-import { HandleChangeName } from "../../../services/tai-lieu";
+import { HandleChangeName, HandleDeleteFile } from "../../../services/tai-lieu";
 
 interface AuthInterface extends JwtPayload {
   id: string;
@@ -157,7 +157,21 @@ const TaiLieuTrongThuMuc = () => {
     setIsOpenModalEdit(true)
   };
 
-  const handleDeleteConfirm = async (record: any) => {};
+  const handleDeleteConfirm = async (record: any) => {
+    setLoading(true)
+      await HandleDeleteFile(record.id)
+      .then((res:any)=> {
+        ShowToast("success", "Thông báo", "Xóa tài liệu thành công", 3)
+  
+        setIsRefreshData(!isRefreshData)
+      })
+      .catch(()=> {
+        ShowToast("error", "Thông báo", "Có lỗi xảy ra", 3)
+      })
+      .finally(()=> {
+        setLoading(false)
+      })
+  };
 
   const handleEdit = async () => {
     setLoading(true)
@@ -233,8 +247,8 @@ const TaiLieuTrongThuMuc = () => {
     if (thuMucInfo.length === 1) {
       currentName = thuMucInfo[0].ten;
     } else if (thuMucInfo.length >= 2) {
-      parentName = thuMucInfo[thuMucInfo.length - 2].ten;
-      currentName = thuMucInfo[thuMucInfo.length - 1].ten;
+      parentName = thuMucInfo[thuMucInfo.length - 1].ten;
+      currentName = thuMucInfo[thuMucInfo.length - 2].ten;
     }
     setBreadcrumb([
       "Trang chủ",
