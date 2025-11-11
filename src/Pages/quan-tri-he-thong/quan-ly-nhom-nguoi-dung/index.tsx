@@ -39,6 +39,7 @@ import { axiosConfig } from "../../../Utils/configApi";
 import { render } from "@testing-library/react";
 import { addNhomNguoiDung, getNhomNguoiDungById, handleDeleteManyNND, handleDeleteNND, handleEditNND } from "../../../services/nhom-nguoi-dung";
 import { routesConfig } from "../../../Routers/routes";
+import FormInputNumber from "../../../Components/form-input-number/FormInputNumber";
 
 const QuanLyNhomNguoiDung = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -110,12 +111,14 @@ const QuanLyNhomNguoiDung = () => {
     var ma = form.getFieldValue("ma");
     var ten = form.getFieldValue("ten");
     var mo_ta = form.getFieldValue("mo_ta");
+    var cap_do = form.getFieldValue("cap_do");
     var ds_nguoi_dung = lstNguoiDung
 
     var data = {
       ma,
       ten,
       mo_ta,
+      cap_do,
       lstNguoiDungs: ds_nguoi_dung,
     };
 
@@ -158,6 +161,7 @@ const QuanLyNhomNguoiDung = () => {
     var ma = formEdit.getFieldValue("ma");
     var ten = formEdit.getFieldValue("ten");
     var mo_ta = formEdit.getFieldValue("mo_ta");
+    var cap_do = formEdit.getFieldValue("cap_do");
     var ds_nguoi_dung = lstNguoiDungEdit
 
     var data = {
@@ -165,6 +169,7 @@ const QuanLyNhomNguoiDung = () => {
       ma,
       ten,
       mo_ta,
+      cap_do,
       lstNguoiDungs: ds_nguoi_dung
     };
 
@@ -223,6 +228,12 @@ const QuanLyNhomNguoiDung = () => {
         return <span>{formatDateTime(data)}</span>;
       },
       width: "20%",
+    },
+    {
+      title: "Cấp độ",
+      dataIndex: "cap_do",
+      key: "cap_do",
+      width: "10%",
     },
     {
       title: "Trạng thái",
@@ -496,7 +507,7 @@ const QuanLyNhomNguoiDung = () => {
           </Typography.Text>
           <Form layout="vertical" form={form}>
             <Row gutter={23}>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item name={"ma"}>
                   <FormItemInput
                     required
@@ -505,12 +516,21 @@ const QuanLyNhomNguoiDung = () => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item name={"ten"}>
                   <FormItemInput
                     required
                     label="Tên nhóm"
                     placeholder="Nhập tên nhóm người dùng"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name={"cap_do"}>
+                  <FormInputNumber
+                    style={{width:"100%"}}
+                    label="Cấp độ"
+                    placeholder="Cấp độ"
                   />
                 </Form.Item>
               </Col>
@@ -680,7 +700,7 @@ const QuanLyNhomNguoiDung = () => {
           </Typography.Text>
           <Form layout="vertical" form={formEdit}>
             <Row gutter={23}>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item name={"ma"}>
                   <FormItemInput
                     required
@@ -689,12 +709,21 @@ const QuanLyNhomNguoiDung = () => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item name={"ten"}>
                   <FormItemInput
                     required
                     label="Tên nhóm"
                     placeholder="Nhập tên nhóm người dùng"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name={"cap_do"}>
+                  <FormInputNumber
+                    style={{width:"100%"}}
+                    label="Cấp độ"
+                    placeholder="Cấp độ"
                   />
                 </Form.Item>
               </Col>

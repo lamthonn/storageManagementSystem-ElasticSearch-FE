@@ -1,5 +1,9 @@
+import { jwtDecode, JwtPayload } from "jwt-decode";
 import { axiosConfig } from "../../Utils/configApi";
-
+import ShowToast from "../../Components/show-toast/ShowToast";
+interface AuthInterface extends JwtPayload {
+    id: string,
+}
 export const getPaginationNguoiDung = async (data:any) => {
   return await axiosConfig.get(`api/nguoi-dung/get-pagination?pageNumber=${data.pageNumber}&pageSize=${data.pageSize}${data.keySearch ? `&keySearch=${data.keySearch}` :""}`);
 };
@@ -24,4 +28,26 @@ export const GetColleague = async (id:any, tai_lieu_id:any) => {
 };
 export const GetUserByDoc = async (tai_lieu_id:any) => {
   return await axiosConfig.get(`api/nguoi-dung/get-user-by-doc?tai_lieu_id=${tai_lieu_id}`);
+};
+
+export const GetNhomNguoiDungByNguoiDungId = async () => {
+   const token = localStorage.getItem("auth");
+    if(token){
+        const decodeToken: AuthInterface = jwtDecode(token);
+        return await axiosConfig.get(`api/nguoi-dung/get-nhom-nguoi-dung-by-nguoi-dung-id?nguoi_dung_id=${decodeToken.id}`);
+    }
+    else {
+        ShowToast("warning", "Thông báo", "Vui lòng đăng nhập lại hệ thống", 3)
+    }
+};
+
+export const ChangeNhomNguoiDung = async (nhom_nguoi_dung_id: any) => {
+   const token = localStorage.getItem("auth");
+    if(token){
+        const decodeToken: AuthInterface = jwtDecode(token);
+        return await axiosConfig.put(`api/nguoi-dung/change-nhom-nguoi-dung?nguoi_dung_id=${decodeToken.id}&nhom_nguoi_dung_id=${nhom_nguoi_dung_id}`);
+    }
+    else {
+        ShowToast("warning", "Thông báo", "Vui lòng đăng nhập lại hệ thống", 3)
+    }
 };

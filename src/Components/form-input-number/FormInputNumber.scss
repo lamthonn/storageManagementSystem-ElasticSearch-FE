@@ -1,0 +1,44 @@
+.form-input {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    flex: 1 0 0;
+  }
+  .form-item {
+    display: flex;
+    flex-direction: column;  // Đảm bảo label và input hiển thị theo cột
+  }
+  
+  .ant-form-item-label {
+    font-weight: bold;  // In đậm label
+  }
+
+  .ant-input-number .ant-input-number-input{
+    text-align: left !important;
+    padding-right:55px;
+  }
+  .ant-input-number{
+    border: 1px solid #9ca3af !important;
+    min-height: 35px !important;
+  }
+
+
+  .clearable-input-number {
+    position: relative;
+    width: 100%;
+  }
+  
+  .clearable-input-number .clear-icon {
+    position: absolute;
+    right: 10px; /* Đặt khoảng cách từ bên phải */
+    top: 50%; /* Căn giữa theo chiều dọc */
+    transform: translateY(-50%);
+    color: #bfbfbf;
+    cursor: pointer;
+    z-index: 1;
+    margin-right: 20px;
+  }
+
+  .clearable-input-number .clear-icon:hover{
+    color: rgba(0, 0, 0, 0.45);
+  } 

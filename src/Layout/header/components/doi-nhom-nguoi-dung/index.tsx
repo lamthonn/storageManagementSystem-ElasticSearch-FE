@@ -1,33 +1,59 @@
 
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { Modal, Table, Radio, Button, Pagination } from "antd";
-
-interface NhomNguoiDung {
-  id: number;
-  ten: string;
-}
+import { ChangeNhomNguoiDung, GetNhomNguoiDungByNguoiDungId } from "../../../../services/nguoi-dung";
+import ShowToast from "../../../../Components/show-toast/ShowToast";
+import { useNavigate } from "react-router-dom";
+import { routesConfig } from "../../../../Routers/routes";
 
 interface ModalDoiNhomNguoiDungProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (selectedId: number) => void;
-  data: NhomNguoiDung[];
   defaultId?: number;
 }
 
 const ModalDoiNhomNguoiDung: React.FC<ModalDoiNhomNguoiDungProps> = ({
   isOpen,
   onClose,
-  onSave,
-  data,
   defaultId,
 }) => {
   const [selectedId, setSelectedId] = useState<number | null>(defaultId || null);
+  const [data, setData] = useState<any[]>([]);
+
+  const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
 
+  useEffect(()=> {
+    setLoading(true)
+    GetNhomNguoiDungByNguoiDungId()
+    .then((res:any)=> {
+      // Xử lý dữ liệu trả về
+      setData(res.data);
+      setSelectedId(res.data.find((item: any) => item.isMacDinh)?.id || null);
+    })
+    .catch(err => {
+      // Xử lý lỗi
+      console.error("Lỗi khi lấy nhóm người dùng:", err);
+    })
+    .finally(()=> setLoading(false));
+  }, []);
+  const navigate = useNavigate();
+
   const handleSave = () => {
-    if (selectedId !== null) onSave(selectedId);
+    ChangeNhomNguoiDung(selectedId)
+    .then((res:any)=> {
+      // Xử lý dữ liệu trả về
+      ShowToast("success", "Thành công", "Đổi nhóm người dùng thành công, vui lòng đăng nhập lại", 3);
+      localStorage.removeItem("auth");
+      navigate(routesConfig.dangNhap);
+      onClose();
+    })
+    .catch(err => {
+      // Xử lý lỗi
+      ShowToast("error", "Thất bại", "Đổi nhóm người dùng thất bại", 3);
+    });
+
   };
 
   const columns = [
@@ -40,6 +66,11 @@ const ModalDoiNhomNguoiDung: React.FC<ModalDoiNhomNguoiDungProps> = ({
         (currentPage - 1) * pageSize + index + 1,
     },
     {
+      title: "Mã",
+      dataIndex: "ma",
+      key: "ma",
+    },
+    {
       title: "Nhóm người dùng",
       dataIndex: "ten",
       key: "ten",
@@ -48,7 +79,7 @@ const ModalDoiNhomNguoiDung: React.FC<ModalDoiNhomNguoiDungProps> = ({
       title: "Mặc định",
       key: "macdinh",
       align: "center" as const,
-      render: (_: any, record: NhomNguoiDung) => (
+      render: (_: any, record: any) => (
         <Radio
           checked={selectedId === record.id}
           onChange={() => setSelectedId(record.id)}
@@ -71,6 +102,7 @@ const ModalDoiNhomNguoiDung: React.FC<ModalDoiNhomNguoiDungProps> = ({
       width={600}
       footer={null}
       onCancel={onClose}
+      loading={loading}
     >
       <Table
         dataSource={pagedData}
