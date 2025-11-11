@@ -1,8 +1,8 @@
 import { FunctionComponent, ReactNode, useState } from "react";
 import "./FormInputNumber.scss";
-import { InputNumber, Form, Typography, Tooltip } from "antd";
+import { InputNumber, Form, Typography } from "antd";
 import { InputStatus } from "antd/es/_util/statusUtils";
-import { CloseCircleFilled, CloseCircleOutlined, CloseOutlined } from "@ant-design/icons";
+import { CloseOutlined } from "@ant-design/icons";
 
 type FormInputNumberProps = {
   label?: string; // Thêm prop cho label
@@ -116,7 +116,7 @@ const FormInputNumber: FunctionComponent<FormInputNumberProps> = ({
             onChange?.(v, parsedValue);
           }}
           onKeyDown={(event) => {
-            if(isPreventCharacter == true){
+            if(isPreventCharacter === true){
               if (["e", "E", "+", "-", ".", ","].includes(event.key)) {
                   event.preventDefault(); // chặn ký tự đặc biệt
                 }
