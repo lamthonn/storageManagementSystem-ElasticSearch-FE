@@ -124,7 +124,7 @@ const FormInputNumber: FunctionComponent<FormInputNumberProps> = ({
               //const invalidChars = ["e", "E", "+", "-"];
             const charCode = (event.which) ? event.which : event.key || event.keyCode;  // keyCode is deprecated but needed for some browsers
             return !(charCode === 101 || charCode === 69 || charCode === 45 || charCode === 43);
-            }
+            } 
           }}
           onKeyPress={handleKeyPress}
           placeholder={placeholder}

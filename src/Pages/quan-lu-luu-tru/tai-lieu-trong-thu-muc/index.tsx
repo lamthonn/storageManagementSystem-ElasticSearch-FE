@@ -39,7 +39,7 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 import KetQuaTimKiem from "../ket-qua-tim-kiem/ket-qua-tim-kiem";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "../../../Layout/main-layout";
-import { HandleChangeName, HandleDeleteFile } from "../../../services/tai-lieu";
+import { HandleChangeName, HandleDeleteFile, HandleDeleteManyFile } from "../../../services/tai-lieu";
 
 interface AuthInterface extends JwtPayload {
   id: string;
@@ -197,7 +197,23 @@ const TaiLieuTrongThuMuc = () => {
     })
   };
 
-  const handleDeleteAny = () => {};
+  const handleDeleteAny = () => {
+    setLoading(true);
+    console.log("selectedRowKeys;:", selectedRowKeys);
+    HandleDeleteManyFile(selectedRowKeys)
+    .then((res:any) => {
+      ShowToast("success", "Thông báo", "Xóa nhiều tài liệu thành công", 3)
+      setIsRefreshData(!isRefreshData);
+      setIsOpenModalDelete(false);
+      setSelectedRowKeys([]);
+    })
+    .catch(() => {
+      ShowToast("error", "Thông báo", "Có lỗi xảy ra", 3);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+  };
 
   const handleSearchBasic = () => {
     if (keySearch.trim() !== "") {

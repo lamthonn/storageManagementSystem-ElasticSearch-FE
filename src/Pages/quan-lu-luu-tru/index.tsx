@@ -41,7 +41,7 @@ import {
   getAllThuMuc,
   updateThuMuc,
 } from "../../services/thu-muc";
-import { AdvancedSearch, DownloadFile, GetAllTaiLieu, HandleChangeName, HandleDeleteFile, HandleShareFile } from "../../services/tai-lieu";
+import { AdvancedSearch, DownloadFile, GetAllTaiLieu, HandleChangeName, HandleDeleteFile, HandleDeleteManyFile, HandleShareFile } from "../../services/tai-lieu";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import ManHinhDefault from "./man-hinh-chinh";
 import KetQuaTimKiem from "./ket-qua-tim-kiem/ket-qua-tim-kiem";
@@ -251,7 +251,22 @@ const QuanLyLuuTru = () => {
     
   };
 
-  const handleDeleteAny = () => {};
+  const handleDeleteAny = () => {
+    setLoading(true);
+    console.log("selectedRowKeys;:", selectedRowKeys);
+    HandleDeleteManyFile(selectedRowKeys)
+    .then((res:any) => {
+      ShowToast("success", "Thông báo", "Xóa nhiều tài liệu thành công", 3)
+      setIsRefreshData(!isRefreshData);
+      setIsOpenModalDelete(false);
+      setSelectedRowKeys([]);
+    })
+    .catch(() => {
+      ShowToast("error", "Thông báo", "Có lỗi xảy ra", 3);
+    })
+    .finally(() => {
+      setLoading(false);
+    });};
 
 
   const column = [

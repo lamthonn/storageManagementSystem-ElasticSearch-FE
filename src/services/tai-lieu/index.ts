@@ -57,6 +57,6 @@ export const HandleDeleteFile = async (id: any) => {
 
 export const HandleDeleteManyFile = async (ids: any) => {
     if(true){
-        return await axiosConfig.delete(`api/quan-ly-tai-lieu/xoa-nhieu-file`, ids);
+        return await axiosConfig.delete(`api/quan-ly-tai-lieu/xoa-nhieu-file`, { data: ids });
     }
 };
