@@ -309,6 +309,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
               content: "Bạn có chắc chắn muốn xóa tài liệu này không?",
               okText: "Có",
               cancelText: "Không",
+              centered: true,
               onOk: () => handleDeleteConfirm(record),
             });
           }

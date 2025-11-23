@@ -1070,7 +1070,7 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
             Đóng
           </Button>
 
-          <ButtonCustom text="Tải lên" onClick={handleOk} />
+          <ButtonCustom loading={loading} text="Tải lên" onClick={handleOk} />
         </div>
       </div>
     </Spin>

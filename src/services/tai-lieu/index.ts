@@ -60,3 +60,9 @@ export const HandleDeleteManyFile = async (ids: any) => {
         return await axiosConfig.delete(`api/quan-ly-tai-lieu/xoa-nhieu-file`, { data: ids });
     }
 };
+
+export const HandleGiaiMa = async (data: any) => {
+    if(true){
+        return await axiosConfig.post(`api/quan-ly-tai-lieu/giai-ma`, data);
+    }
+};

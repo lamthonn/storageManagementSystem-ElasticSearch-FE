@@ -9,6 +9,7 @@ import FormItemInput from "../../../Components/form-input/FormInput";
 import ButtonCustom from "../../../Components/button/button";
 import TableComponent from "../../../Components/table";
 import PdfPreview from "../components/previewComponent";
+import DocxPreview from "../components/docxPreview";
 
 type ManHinhDefaultProps = {
     dsThuMuc: any[];
@@ -56,8 +57,10 @@ const ManHinhDefault: React.FC<ManHinhDefaultProps> = ({
     handleChooseFolder,
     setSelectedRowKeys,
 }) => {
-  const [dataDocInfor, setDocInfor] = useState<any>();
+  const [dataDocInfor, setDocInfor] = useState<any | null>(null);
   useEffect(()=> {
+    console.log("docInfor:::", docInfor);
+    
     setDocInfor(docInfor);    
   },[docInfor])
   return (
@@ -188,7 +191,20 @@ const ManHinhDefault: React.FC<ManHinhDefaultProps> = ({
         }
         centered
       >
-          <PdfPreview taiLieu={dataDocInfor}/>
+       {
+          dataDocInfor !== null && dataDocInfor.fileType !== null && dataDocInfor?.fileType === ".pdf" ? <PdfPreview taiLieu={dataDocInfor}/> : (
+            dataDocInfor?.fileType === ".docx" || dataDocInfor?.fileType === ".doc" ?
+            <DocxPreview data={dataDocInfor.htmlContent}/> :
+            dataDocInfor?.fileType === ".xlsx" || dataDocInfor?.fileType === ".xls" ?
+            "Xem trước tệp XLS/XLSX hiện không được hỗ trợ. Vui lòng tải xuống để xem tài liệu." :
+            dataDocInfor?.fileType === ".pptx" || dataDocInfor?.fileType === ".ppt" ?
+            "Xem trước tệp PPT/PPTX hiện không được hỗ trợ. Vui lòng tải xuống để xem tài liệu." :
+            dataDocInfor?.fileType === ".txt" ?
+            "Xem trước tệp TXT hiện không được hỗ trợ. Vui lòng tải xuống để xem tài liệu." :
+            "Định dạng tệp này hiện không được hỗ trợ để xem trước."
+          )
+        }
+          
       </Modal>
 
       {/* model Sửa */}
