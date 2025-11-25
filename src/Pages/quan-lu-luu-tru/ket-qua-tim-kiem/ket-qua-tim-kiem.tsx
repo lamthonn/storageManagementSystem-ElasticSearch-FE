@@ -354,6 +354,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
         open={isOpenModalView}
         onCancel={() => setIsOpenModalView(false)}
         width={1000}
+        centered
         footer={
           <div style={{ textAlign: "center" }}>
             <Button
@@ -364,10 +365,9 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
             </Button>
           </div>
         }
-        centered
       >
           {
-            dataDocInfor !== null && dataDocInfor.fileType !== null && dataDocInfor?.fileType === ".pdf" ? <PdfPreview taiLieu={dataDocInfor}/> : (
+            dataDocInfor !== null && dataDocInfor !== undefined && dataDocInfor.fileType !== null && dataDocInfor?.fileType === ".pdf" ? <PdfPreview taiLieu={dataDocInfor}/> : (
               dataDocInfor?.fileType === ".docx" || dataDocInfor?.fileType === ".doc" ?
               <DocxPreview data={dataDocInfor.htmlContent}/> :
               dataDocInfor?.fileType === ".xlsx" || dataDocInfor?.fileType === ".xls" ?
