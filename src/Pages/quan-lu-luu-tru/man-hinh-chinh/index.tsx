@@ -60,8 +60,6 @@ const ManHinhDefault: React.FC<ManHinhDefaultProps> = ({
 }) => {
   const [dataDocInfor, setDocInfor] = useState<any | null>(null);
   useEffect(()=> {
-    console.log("docInfor:::", docInfor);
-    
     setDocInfor(docInfor);    
   },[docInfor])
   return (
