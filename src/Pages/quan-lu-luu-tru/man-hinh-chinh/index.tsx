@@ -10,6 +10,7 @@ import ButtonCustom from "../../../Components/button/button";
 import TableComponent from "../../../Components/table";
 import PdfPreview from "../components/previewComponent";
 import DocxPreview from "../components/docxPreview";
+import ImagePreview from "../components/ImagePreview";
 
 type ManHinhDefaultProps = {
     dsThuMuc: any[];
@@ -201,7 +202,8 @@ const ManHinhDefault: React.FC<ManHinhDefaultProps> = ({
             "Xem trước tệp PPT/PPTX hiện không được hỗ trợ. Vui lòng tải xuống để xem tài liệu." :
             dataDocInfor?.fileType === ".txt" ?
             "Xem trước tệp TXT hiện không được hỗ trợ. Vui lòng tải xuống để xem tài liệu." :
-            "Định dạng tệp này hiện không được hỗ trợ để xem trước."
+            dataDocInfor?.fileType === ".jpeg" || dataDocInfor?.fileType === ".jpg" || dataDocInfor?.fileType === ".png" ?
+            <ImagePreview taiLieu={dataDocInfor}/> : "Định dạng tệp này hiện không được hỗ trợ để xem trước."
           )
         }
           

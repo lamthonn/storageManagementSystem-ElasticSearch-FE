@@ -36,6 +36,7 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 import { GetUserByDoc } from "../../../services/nguoi-dung";
 import { useLocation, useNavigate } from "react-router-dom";
 import PdfPreview from "../components/previewComponent";
+import DocxPreview from "../components/docxPreview";
 
 type KetQuaTimKiemProps = {
   thu_muc_id?: any;
@@ -347,7 +348,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
         onRow={handleRowClick}
       />
 
-      {/* model xem */}
+      {/* modal xem */}
       <Modal
         title={`Xem chi tiết tài liệu "${dataDocInfor ? dataDocInfor.ten: ""}"`}
         open={isOpenModalView}
@@ -365,7 +366,19 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
         }
         centered
       >
-          <PdfPreview taiLieu={dataDocInfor}/>
+          {
+            dataDocInfor !== null && dataDocInfor.fileType !== null && dataDocInfor?.fileType === ".pdf" ? <PdfPreview taiLieu={dataDocInfor}/> : (
+              dataDocInfor?.fileType === ".docx" || dataDocInfor?.fileType === ".doc" ?
+              <DocxPreview data={dataDocInfor.htmlContent}/> :
+              dataDocInfor?.fileType === ".xlsx" || dataDocInfor?.fileType === ".xls" ?
+              "Xem trước tệp XLS/XLSX hiện không được hỗ trợ. Vui lòng tải xuống để xem tài liệu." :
+              dataDocInfor?.fileType === ".pptx" || dataDocInfor?.fileType === ".ppt" ?
+              "Xem trước tệp PPT/PPTX hiện không được hỗ trợ. Vui lòng tải xuống để xem tài liệu." :
+              dataDocInfor?.fileType === ".txt" ?
+              "Xem trước tệp TXT hiện không được hỗ trợ. Vui lòng tải xuống để xem tài liệu." :
+              "Định dạng tệp này hiện không được hỗ trợ để xem trước."
+            )
+          }
       </Modal>
 
       {/* model Sửa */}

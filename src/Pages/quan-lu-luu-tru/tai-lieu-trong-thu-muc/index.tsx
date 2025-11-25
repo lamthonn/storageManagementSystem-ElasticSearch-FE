@@ -526,7 +526,7 @@ const TaiLieuTrongThuMuc = () => {
           >
             <UploadFileCustom
               thu_muc_id={thu_muc_id}
-              acceptedFileTypes={[".docx", ".pdf", ".doc"]}
+              acceptedFileTypes={[".docx", ".pdf", ".doc", ".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".txt", ".pptx", ".ppt"]}
               handleClose={() => setIsOpenModalImport(false)}
               title="Upload tài liệu"
               isRefreshData={isRefreshData}

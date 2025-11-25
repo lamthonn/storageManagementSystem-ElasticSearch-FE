@@ -765,7 +765,7 @@ const QuanLyLuuTru = () => {
           onCancel={() => setIsOpenModalImport(false)}
         >
           <UploadFileCustom
-            acceptedFileTypes={[".docx", ".pdf", ".doc"]}
+            acceptedFileTypes={[".docx", ".pdf", ".doc",".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".txt", ".pptx", ".ppt"]}
             handleClose={() => setIsOpenModalImport(false)}
             title="Upload tài liệu"
             isRefreshData={isRefreshData}
