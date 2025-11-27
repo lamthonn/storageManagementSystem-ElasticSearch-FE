@@ -55,6 +55,12 @@ export const menu = () => {
                 label: `Quản lý nhật ký hệ thống`,
                 ma_dinh_danh: routesConfig.quanLyNhatKyHeThong,
                 Permissions:["PERM_VIEW", "PERM_ADD", "PERM_EDIT", "PERM_DELETE"],
+            },
+            {
+                key: `${routesConfig.quanLyHeThong}/${routesConfig.quanLyCauHinhFile}`,
+                label: `Quản lý cấu hình file`,
+                ma_dinh_danh: routesConfig.quanLyCauHinhFile,
+                Permissions:["PERM_EDIT"],
             }
         ]    
     },

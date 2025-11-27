@@ -13,6 +13,7 @@ export const routesConfig = {
 
       //quản lý nhật ký hệ thống
       quanLyNhatKyHeThong: "quan-ly-nhat-ky-he-thong",
+      quanLyCauHinhFile: "quan-ly-cau-hinh-file",
 
       //danh mục phòng ban
       danhMucPhongBan: "danh-muc-phong-ban",

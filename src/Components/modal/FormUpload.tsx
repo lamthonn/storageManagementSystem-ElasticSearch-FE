@@ -39,6 +39,7 @@ import Typography from "antd/es/typography/Typography";
 import { UploadTaiLieu } from "../../services/tai-lieu";
 import { set } from "lodash";
 import { formatFileSize } from "../../Utils/common";
+import { getAll } from "../../services/cau-hinh-file";
 type PreChildrenProps = {
   name?: string;
   props?: any;
@@ -180,18 +181,46 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
   );
   let [selectedPattern, setSelectedPattern] = useState<string>("");
   let [isEditFormNew, setIsEditFormNew] = useState<boolean>(false);
-
+  const [acceptedFileTypesLocal, setAcceptedFileTypesLocal] = useState<string[]>([])
   const [loading, setLoading] = useState<boolean>(false);
   const [filterPathProp, setFilterPathProp] = useState<any[any]>([
     ...(filterPath?.map((x) => ({ ...x })) ?? []),
+
+    
   ]); // clone array not working
   if (typeof acceptedFileTypes === "string")
     acceptedFileTypes = [acceptedFileTypes];
 
+  useEffect(()=> {
+    setLoading(true);
+    getAll()
+    .then((res:any)=> {
+      if(res.data.length > 0)
+      {
+        var dstype = res.data.map((item:any)=> {
+          return item.extension_file
+        })
+        var size = res.data[0].file_size;
+        setAcceptedFileTypesLocal(dstype);
+        setMaxSizeConfig(size);
+      }else{
+        setAcceptedFileTypesLocal([]);
+        setMaxSizeConfig(5);
+      }
+    })
+    .catch(()=> {
+
+    })
+    .finally(()=> {
+      setLoading(false);
+    })
+    setAcceptedFileTypesLocal(acceptedFileTypes);
+  },[acceptedFileTypes])
+
   //Excel va cap nhat sua 1 file
   if (
-    acceptedFileTypes?.includes(".xlsx") ||
-    acceptedFileTypes?.includes(".xls") ||
+    acceptedFileTypesLocal?.includes(".xlsx") ||
+    acceptedFileTypesLocal?.includes(".xls") ||
     isEditFormNew === true
   ) {
     // totalFile = 1;
@@ -210,11 +239,11 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
       return;
     }
     selectedFiles.forEach((x: any) => {
-      validateFileType(x, acceptedFileTypes);
+      validateFileType(x, acceptedFileTypesLocal);
     });
 
     //check tên file
-    const validExtensions = acceptedFileTypes?.map((ext) =>
+    const validExtensions = acceptedFileTypesLocal?.map((ext) =>
       ext.trim().replace(".", "")
     );
     let filteredFiles: any[] = selectedFiles.filter((file: any) => {
@@ -237,8 +266,8 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
       msgValid +=
         (msgValid === "" ? "" : "") +
         (maxSizeConfig === 0 ||
-        (maxFileSize || maxSizeConfig
-          ? file.size <= (maxSizeConfig ?? maxFileSize) * 1024 * 1024
+        (maxSizeConfig
+          ? file.size <= (maxSizeConfig) * 1024 * 1024
           : true)
           ? ""
           : "- File quá kích thước cho phép<br/>");
@@ -597,15 +626,15 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
 
   const validateFileType = (
     file: File,
-    acceptedFileTypes: string[]
+    acceptedFileTypesLocal: string[]
   ): boolean => {
-    const validExtensions = acceptedFileTypes?.map((ext) =>
+    const validExtensions = acceptedFileTypesLocal?.map((ext) =>
       ext.trim().replace(".", "").toLowerCase()
     );
     const fileExtension = file.name.split(".").pop()?.toLowerCase();
 
     if (!fileExtension || !validExtensions.includes(fileExtension)) {
-      //ShowToast('error', 'Định dạng file không hợp lệ', `File ${file.name} không thuộc định dạng được chấp nhận: ${acceptedFileTypes}`);
+      //ShowToast('error', 'Định dạng file không hợp lệ', `File ${file.name} không thuộc định dạng được chấp nhận: ${acceptedFileTypesLocal}`);
       return false;
     }
     return true;
@@ -613,8 +642,8 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
 
   const overwriteFile = (index: number) => {
     if (
-      acceptedFileTypes?.includes(".xlsx") ||
-      acceptedFileTypes?.includes(".xls")
+      acceptedFileTypesLocal?.includes(".xlsx") ||
+      acceptedFileTypesLocal?.includes(".xls")
     ) {
     } else {
       const file = files[index];
@@ -651,8 +680,8 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
 
   const handleRemoveFile = (index: number) => {
     if (
-      acceptedFileTypes?.includes(".xlsx") ||
-      acceptedFileTypes?.includes(".xls")
+      acceptedFileTypesLocal?.includes(".xlsx") ||
+      acceptedFileTypesLocal?.includes(".xls")
     ) {
       const updatedFiles = [...files];
       updatedFiles.splice(index, 1);
@@ -932,7 +961,7 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
                 <input
                   type="file"
                   onChange={handleFileChange}
-                  accept={(acceptedFileTypes ?? []).join(",")}
+                  accept={(acceptedFileTypesLocal ?? []).join(",")}
                   multiple
                   style={{ display: "none" }}
                   id="file-upload-input"
@@ -957,20 +986,20 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
                 <Col style={{ width: "100%", textAlign: "left" }}>
                   {maxSizeConfig === 0 && (
                     <p style={{ marginTop: "10px" }}>
-                      File đính kèm là dạng file {acceptedFileTypes}. Không giới
+                      File đính kèm là dạng file {acceptedFileTypesLocal}. Không giới
                       hạn dung lượng
                     </p>
                   )}
                   {maxSizeConfig !== 0 && (
                     <p style={{ marginTop: "10px" }}>
-                      File đính kèm là dạng file {acceptedFileTypes}. Dung lượng
+                      File đính kèm là dạng file {acceptedFileTypesLocal}. Dung lượng
                       không quá {maxSizeConfig ?? 10}MB
                     </p>
                   )}
                   {pattern && (
                     <p style={{ marginTop: "10px" }}>
                       Quy tắc đặt tên file: {newPattern.join(" hoặc ")}
-                      {acceptedFileTypes?.join("/")}
+                      {acceptedFileTypesLocal?.join("/")}
                     </p>
                   )}
                   {itemRecord && restProps.isSameName === true && (

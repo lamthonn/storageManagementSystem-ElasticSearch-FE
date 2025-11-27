@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, useLocation } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "../Layout/main-layout";
 import QuanTriLuuTru from "../Pages/quan-lu-luu-tru";
 import DanhMucPhongBan from "../Pages/quan-tri-danh-muc/danh-muc-phong-ban";
@@ -11,6 +11,7 @@ import Login from "../Pages/dang-nhap";
 import NotFoundPage from "../Pages/404ErrorPage";
 import ErrorPage from "../Pages/500ErrorPage";
 import TaiLieuTrongThuMuc from "../Pages/quan-lu-luu-tru/tai-lieu-trong-thu-muc";
+import QuanLyCauHinhFile from "../Pages/quan-tri-he-thong/quan-ly-cau-hinh-file";
 
 export const router = createBrowserRouter([
     {
@@ -93,6 +94,16 @@ export const router = createBrowserRouter([
             {
                 path: `${routesConfig.quanLyHeThong}/${routesConfig.quanLyNhatKyHeThong}`,
                 element: <QuanLyNhatKyHeThong />,
+            },
+        ],
+    },
+    {
+        path: '/',
+        element: <MainLayout breadcrumb={['Trang chủ', 'Quản trị hệ thống', 'Quản lý cấu hình file']}/>,
+        children: [
+            {
+                path: `${routesConfig.quanLyHeThong}/${routesConfig.quanLyCauHinhFile}`,
+                element: <QuanLyCauHinhFile />,
             },
         ],
     },
