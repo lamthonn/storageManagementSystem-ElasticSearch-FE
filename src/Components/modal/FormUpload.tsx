@@ -835,7 +835,6 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
       }
     })
     .catch((error) => {
-      console.log("error", error);
       if(error?.response?.data?.includes("đã tồn tại trên hệ thống")){
         ShowToast("warning", "Cảnh báo", "Tài liệu đã tồn tại trên hệ thống, vui lòng kiểm tra lại");
       }

@@ -4,6 +4,7 @@ import FormItemInput from "../../../Components/form-input/FormInput";
 import { axiosConfig } from "../../../Utils/configApi";
 import { addThuMuc } from "../../../services/thu-muc";
 import ShowToast from "../../../Components/show-toast/ShowToast";
+import FormSelect from "../../../Components/select/FormSelect";
 
 type ModalThemMoiThuMucProps = {
   isOpenModal: boolean;
@@ -21,6 +22,7 @@ const ModalThemMoiThuMuc: React.FC<ModalThemMoiThuMucProps> = ({
   setIsRefreshData,
 }) => {
   const [loading, setLoading] = useState<boolean>(false)
+  const [phongBan, setPhongban] = useState<any | null>(null);
   const [newFolder, setNewFolder] = useState<string>(
     "Thư mục không có tiêu đề"
   );
@@ -29,6 +31,7 @@ const ModalThemMoiThuMuc: React.FC<ModalThemMoiThuMucProps> = ({
     var data = {
       ten: newFolder,
       thu_muc_cha_id: thu_muc_id || null,
+      phong_ban_id: phongBan 
     }
 
     await addThuMuc(data)
@@ -60,6 +63,20 @@ const ModalThemMoiThuMuc: React.FC<ModalThemMoiThuMucProps> = ({
       <FormItemInput
         value={newFolder}
         onChange={(e) => setNewFolder(e.target.value)}
+      />
+
+      <FormSelect
+        selectType="selectApi"
+        label={"Thư mục thuộc quản lý của phòng ban"}
+        src="api/danh-muc-phong-ban"
+        labelField="ten"
+        valueField="id"
+        defaultFirstOption
+        allOptionLabel=""
+        required
+        placeholder="Chọn phòng ban lưu trữ tài liệu"
+        value={phongBan}
+        onChange={(val: any) => setPhongban(val)}
       />
     </Modal>
   );

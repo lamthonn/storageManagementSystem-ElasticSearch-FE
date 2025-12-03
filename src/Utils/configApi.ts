@@ -86,6 +86,7 @@ axiosConfig.interceptors.response.use(
           else {
             localStorage.setItem("auth", JSON.stringify(res.data));
             await ShowToast("warning", "Thông báo", "Đã làm mới phiên đăng nhập, vui lòng tải lại trang");
+            window.location.reload();
           }
         })
         .catch(async (err: any) => {
@@ -133,6 +134,7 @@ axiosConfigUpload.interceptors.response.use(
           else {
             localStorage.setItem("auth", JSON.stringify(res.data));
             await ShowToast("warning", "Thông báo", "Đã làm mới phiên đăng nhập, vui lòng tải lại trang");
+            window.location.reload();
           }
         })
         .catch(async (err: any) => {
@@ -179,6 +181,7 @@ createAxios().interceptors.response.use(
           else {
             localStorage.setItem("auth", JSON.stringify(res.data));
             await ShowToast("warning", "Thông báo", "Đã làm mới phiên đăng nhập, vui lòng tải lại trang");
+            window.location.reload();
           }
         })
         .catch(async (err: any) => {
