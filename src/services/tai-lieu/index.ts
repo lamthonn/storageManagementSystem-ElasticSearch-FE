@@ -66,3 +66,21 @@ export const HandleGiaiMa = async (data: any) => {
         return await axiosConfig.post(`api/quan-ly-tai-lieu/giai-ma`, data);
     }
 };
+
+export const SetPasswordForDoc = async (tai_lieu_id: any, password: string) => {
+    if(true){
+        return await axiosConfig.put(`api/quan-ly-tai-lieu/set-password?tai_lieu_id=${tai_lieu_id}`, password);
+    }
+};
+
+export const CheckPasswordForDoc = async (tai_lieu_id: any, password: string) => {
+    if(true){
+        return await axiosConfig.get(`api/quan-ly-tai-lieu/check-password-doc?tai_lieu_id=${tai_lieu_id}&password=${password}` );
+    }
+};
+
+export const CheckHasPassword = async (tai_lieu_id: any) => {
+    if(true){
+        return await axiosConfig.get(`api/quan-ly-tai-lieu/check-has-password?tai_lieu_id=${tai_lieu_id}`);
+    }
+};

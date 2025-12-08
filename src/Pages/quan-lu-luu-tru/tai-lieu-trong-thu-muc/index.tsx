@@ -273,6 +273,17 @@ const TaiLieuTrongThuMuc = () => {
       <span>{currentName}</span>
     ].filter(Boolean));
   }, [thuMucInfo]);
+
+  //đặt mật khẩu cho tài liệu
+  const [isSetPasswordModalOpen, setIsSetPasswordModalOpen] = useState<boolean>(false);
+  const [recordForSetPassword, setRecordForSetPassword] = useState<any>(null);
+  const [isBatBuoc, setIsBatBuoc] = useState<boolean>(false);
+  
+  const handleSetPassword = (record: any) => {
+    setIsSetPasswordModalOpen(true);
+    setRecordForSetPassword(record);
+  }
+  
   return (
     <MainLayout
       breadcrumb={breadcrumb}
@@ -531,6 +542,8 @@ const TaiLieuTrongThuMuc = () => {
               title="Upload tài liệu"
               isRefreshData={isRefreshData}
               setIsRefreshData={setIsRefreshData}
+              setRecordForSetPassword={setRecordForSetPassword}
+              isTuyetMat = {false}
             />
           </Modal>
 

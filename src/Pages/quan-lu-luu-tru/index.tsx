@@ -41,12 +41,24 @@ import {
   getAllThuMuc,
   updateThuMuc,
 } from "../../services/thu-muc";
-import { AdvancedSearch, DownloadFile, GetAllTaiLieu, HandleChangeName, HandleDeleteFile, HandleDeleteManyFile, HandleShareFile } from "../../services/tai-lieu";
+import {
+  AdvancedSearch,
+  CheckHasPassword,
+  CheckPasswordForDoc,
+  DownloadFile,
+  GetAllTaiLieu,
+  HandleChangeName,
+  HandleDeleteFile,
+  HandleDeleteManyFile,
+  HandleShareFile,
+} from "../../services/tai-lieu";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import ManHinhDefault from "./man-hinh-chinh";
 import KetQuaTimKiem from "./ket-qua-tim-kiem/ket-qua-tim-kiem";
 import { useNavigate } from "react-router-dom";
 import { GetUserByDoc } from "../../services/nguoi-dung";
+import SetPasswordModal from "./components/ModalDatMatKhau";
+import { set } from "lodash";
 
 interface AuthInterface extends JwtPayload {
   id: string;
@@ -55,7 +67,7 @@ interface AuthInterface extends JwtPayload {
 
 const QuanLyLuuTru = () => {
   const navigate = useNavigate();
-  
+
   //thông tin người dùng
   const [useId, setUserId] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
@@ -78,7 +90,7 @@ const QuanLyLuuTru = () => {
   const [isRefreshData, setIsRefreshData] = useState<boolean>(false);
   const [dsThuMuc, setDsThuMuc] = useState<any[]>([]);
   const [dsTaiLieu, setDsTaiLieu] = useState<any[]>([]);
-  const [recordSelected, setRecordSelected] = useState<any>(null)
+  const [recordSelected, setRecordSelected] = useState<any>(null);
 
   //data tìm kiếm nâng cao
   const [dataAdvancedSearch, setDataAdvancedSearch] = useState<any>();
@@ -91,8 +103,10 @@ const QuanLyLuuTru = () => {
   const [fileName, setFileName] = useState<string | undefined>(undefined);
   const [ngayTao, setNgayTao] = useState<[Dayjs, Dayjs] | null>(null);
   const [ngayChinhSua, setNgayChinhSua] = useState<[Dayjs, Dayjs] | null>(null);
-  const [isOpenModalAddFolder, setIsOpenModalAddFolder] = useState<boolean>(false);
-  const [selectedRecord, setSelectedRecord] = useState<any>(); 
+  const [isOpenModalAddFolder, setIsOpenModalAddFolder] =
+    useState<boolean>(false);
+  const [isTuyetMat, setIsTuyetMat] = useState<boolean>(false);
+  const [selectedRecord, setSelectedRecord] = useState<any>();
   const getThuMuc = () => {
     getAllThuMuc()
       .then((res: any) => {
@@ -207,67 +221,86 @@ const QuanLyLuuTru = () => {
   //#endregion
 
   const handleOpenEditModal = (record: any) => {
-    setIsOpenModalEdit(true)
+    setIsOpenModalEdit(true);
   };
 
   const handleDeleteConfirm = async (record: any) => {
-    setLoading(true)
+    setLoading(true);
     await HandleDeleteFile(record.id)
-    .then((res:any)=> {
-      ShowToast("success", "Thông báo", "Xóa tài liệu thành công", 3)
+      .then((res: any) => {
+        ShowToast("success", "Thông báo", "Xóa tài liệu thành công", 3);
 
-      setIsRefreshData(!isRefreshData)
-    })
-    .catch(()=> {
-      ShowToast("error", "Thông báo", "Có lỗi xảy ra", 3)
-    })
-    .finally(()=> {
-      setLoading(false)
-    })
+        setIsRefreshData(!isRefreshData);
+      })
+      .catch(() => {
+        ShowToast("error", "Thông báo", "Có lỗi xảy ra", 3);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const handleEdit = async () => {
-    setLoading(true)
-    var data = formEdit.getFieldValue("name_change")
+    setLoading(true);
+    var data = formEdit.getFieldValue("name_change");
 
     var bodyRequest = {
       tai_lieu_id: recordSelected.id,
-      new_name: data
-    }
+      new_name: data,
+    };
 
     await HandleChangeName(bodyRequest)
-    .then((res:any) => {
-      setRecordSelected(null);
-      setIsRefreshData(!isRefreshData);
-      setIsOpenModalEdit(false);
-      ShowToast("success", "Thông báo", "Đổi tên tài liệu thành công", 3)
-    })
-    .catch((err:any) => {
-      ShowToast("error","Lỗi", "Có lỗi xảy ra", 3)
-    })
-    .finally(()=> {
-      setLoading(false);
-    })
-    
+      .then((res: any) => {
+        setRecordSelected(null);
+        setIsRefreshData(!isRefreshData);
+        setIsOpenModalEdit(false);
+        ShowToast("success", "Thông báo", "Đổi tên tài liệu thành công", 3);
+      })
+      .catch((err: any) => {
+        ShowToast("error", "Lỗi", "Có lỗi xảy ra", 3);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+  const CheckDocHasPass = async (record: any) => {
+    setLoading(true);
+    var isCheck = false;
+    await CheckHasPassword(record.id)
+      .then((res: any) => {
+        if (res.data === true) {
+          isCheck = true;
+        } else {
+          isCheck = false;
+        }
+      })
+      .catch((err: any) => {
+        isCheck = false;
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
+    return isCheck;
   };
 
   const handleDeleteAny = () => {
     setLoading(true);
     console.log("selectedRowKeys;:", selectedRowKeys);
     HandleDeleteManyFile(selectedRowKeys)
-    .then((res:any) => {
-      ShowToast("success", "Thông báo", "Xóa nhiều tài liệu thành công", 3)
-      setIsRefreshData(!isRefreshData);
-      setIsOpenModalDelete(false);
-      setSelectedRowKeys([]);
-    })
-    .catch(() => {
-      ShowToast("error", "Thông báo", "Có lỗi xảy ra", 3);
-    })
-    .finally(() => {
-      setLoading(false);
-    });};
-
+      .then((res: any) => {
+        ShowToast("success", "Thông báo", "Xóa nhiều tài liệu thành công", 3);
+        setIsRefreshData(!isRefreshData);
+        setIsOpenModalDelete(false);
+        setSelectedRowKeys([]);
+      })
+      .catch(() => {
+        ShowToast("error", "Thông báo", "Có lỗi xảy ra", 3);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   const column = [
     {
@@ -277,6 +310,33 @@ const QuanLyLuuTru = () => {
       width: "27%",
       render: (data: any, __: any, index: number) => {
         return <span>{data}</span>;
+      },
+    },
+    {
+      title: "Cấp độ",
+      dataIndex: "cap_do",
+      key: "cap_do",
+      width: "10%",
+      render: (data: any, __: any, index: number) => {
+        return (
+          <span>
+            {data === 1 ? (
+              <Tag key={index} color={"green"}>
+                Mật
+              </Tag>
+            ) : data === 2 ? (
+              <Tag key={index} color={"blue"}>
+                Tối mật
+              </Tag>
+            ) : data === 3 ? (
+              <Tag key={index} color={"red"}>
+                Tuyệt mật
+              </Tag>
+            ) : (
+              <span style={{ color: "red" }}>Không xác định</span>
+            )}
+          </span>
+        );
       },
     },
     {
@@ -326,42 +386,91 @@ const QuanLyLuuTru = () => {
             key: "view",
             label: "Xem trước",
           },
-          perms.includes("PERM_EDIT") && record.nguoi_tao === userName && {
-            key: "edit",
-            label: "Đổi tên",
-          },
+          perms.includes("PERM_EDIT") &&
+            record.nguoi_tao === userName && {
+              key: "edit",
+              label: "Đổi tên",
+            },
           {
             key: "download",
-            label: <span onClick={() => downloadFile(record)}>Tải tài liệu xuống</span>,
+            label: (
+              <span onClick={() => downloadFile(record)}>
+                Tải tài liệu xuống
+              </span>
+            ),
           },
-          record.nguoi_tao === userName &&{
+          {
+            key: "set-password",
+            label: (
+              <span onClick={() => handleSetPassword(record)}>
+                Đặt mật khẩu cho tài liệu
+              </span>
+            ),
+          },
+          record.nguoi_tao === userName && {
             key: "share",
-            label: <span onClick={() => handleShareFile(record)}>Chia sẻ tài liệu</span>,
+            label: (
+              <span onClick={() => handleShareFile(record)}>
+                Chia sẻ tài liệu
+              </span>
+            ),
           },
-          perms.includes("PERM_DELETE") && record.nguoi_tao === userName &&{
-            key: "delete",
-            label: <span style={{ color: "red" }}>Xóa tài liệu</span>,
-          },
+          perms.includes("PERM_DELETE") &&
+            record.nguoi_tao === userName && {
+              key: "delete",
+              label: <span style={{ color: "red" }}>Xóa tài liệu</span>,
+            },
         ].filter(Boolean) as MenuProps["items"];
 
-        const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
-          if (key === "view") {
-            setIsOpenModalView(true);
-            setSelectedRecord(record)
-          }
-          if (key === "edit") {
-            handleOpenEditModal(record);
-            setRecordSelected(record);
-          }
-          if (key === "delete") {
-            Modal.confirm({
-              title: "Xóa tài liệu",
-              content: "Bạn có chắc chắn muốn xóa tài liệu này không?",
-              okText: "Có",
-              cancelText: "Không",
-              centered: true,
-              onOk: () => handleDeleteConfirm(record),
-            });
+        const handleMenuClick: MenuProps["onClick"] = async ({ key }) => {
+          var checkdoc = await CheckDocHasPass(record);
+
+          if (!checkdoc) {
+            if (key === "view") {
+              setIsOpenModalView(true);
+              setSelectedRecord(record);
+            }
+            if (key === "edit") {
+              handleOpenEditModal(record);
+              setRecordSelected(record);
+            }
+            if (key === "delete") {
+              Modal.confirm({
+                title: "Xóa tài liệu",
+                content: "Bạn có chắc chắn muốn xóa tài liệu này không?",
+                okText: "Có",
+                cancelText: "Không",
+                centered: true,
+                onOk: () => handleDeleteConfirm(record),
+              });
+            }
+          } else {
+            ShowToast(
+              "warning",
+              "Cảnh báo",
+              "Tài liệu được đặt mật khẩu. Vui lòng nhập mật khẩu để mở!",
+              3
+            );
+            setIsOpenModalInputPassword(true);
+            setRecordForCheckPassword(record);
+            if (key === "view") {
+              setAction("view");
+            }
+            if (key === "edit") {
+              setAction("edit");
+            }
+            if (key === "delete") {
+              setAction("delete");
+            }
+            if (key === "download") {
+              setAction("download");
+            }
+            if (key === "share") {
+              setAction("share");
+            }
+            if(key === "set-password"){
+              setAction("set-password");
+            }
           }
         };
 
@@ -387,35 +496,35 @@ const QuanLyLuuTru = () => {
     setShareFile(record);
     setIsShareModalOpen(true);
     GetUserByDoc(record.id)
-    .then((res:any) => {
-      setLstUserInFile(res.data)
-    })
-    .catch((er:any)=> {
-      ShowToast("error","Lỗi", "Có lỗi xảy ra", 3)
-    })
-    .finally(()=> {
-      setLoading(false);
-    })
-  }
+      .then((res: any) => {
+        setLstUserInFile(res.data);
+      })
+      .catch((er: any) => {
+        ShowToast("error", "Lỗi", "Có lỗi xảy ra", 3);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   const hanldeOkShareDoc = () => {
-    setLoading(true)
-    var data= {
+    setLoading(true);
+    var data = {
       ds_nguoi_dung: selectedUser,
-      tai_lieu_id: shareFile.id
-    }
+      tai_lieu_id: shareFile.id,
+    };
     HandleShareFile(data)
-    .then((res:any)=> {
-      setSelectedUser([]);
-      setIsShareModalOpen(false)
-    })  
-    .catch((err:any)=> {
-      ShowToast("error","Lỗi", "Có lỗi xảy ra", 3)
-    })
-    .finally(()=> {
-      setLoading(false)
-    })
-  }
+      .then((res: any) => {
+        setSelectedUser([]);
+        setIsShareModalOpen(false);
+      })
+      .catch((err: any) => {
+        ShowToast("error", "Lỗi", "Có lỗi xảy ra", 3);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   // hàm download file
   const downloadFile = async (record: any) => {
@@ -443,7 +552,7 @@ const QuanLyLuuTru = () => {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      ShowToast("error","Lỗi","Đã xảy ra lỗi khi tải file!", 3);
+      ShowToast("error", "Lỗi", "Đã xảy ra lỗi khi tải file!", 3);
     }
   };
 
@@ -467,7 +576,6 @@ const QuanLyLuuTru = () => {
 
   //Tìm kiếm nâng cao
   const handleSearchAdvanced = async () => {
-    
     setLoading(true);
     if (
       loaiTaiLieu ||
@@ -502,6 +610,69 @@ const QuanLyLuuTru = () => {
       setIsRefreshData(!isRefreshData);
       setLoading(false);
     }
+  };
+
+  //đặt mật khẩu cho tài liệu
+  const [isSetPasswordModalOpen, setIsSetPasswordModalOpen] =
+    useState<boolean>(false);
+  const [isOpenModalInputPassword, setIsOpenModalInputPassword] =
+    useState<boolean>(false);
+  const [recordForCheckPassword, setRecordForCheckPassword] =
+    useState<any>(null);
+  const [action, setAction] = useState<"view" | "edit" | "delete" | "set-password" | "download" | "share" | null>(null);
+  const [recordForSetPassword, setRecordForSetPassword] = useState<any>(null);
+  const [isBatBuoc, setIsBatBuoc] = useState<boolean>(false);
+  const [inputPassword, setInputPassword] = useState<string>("");
+
+  const handleSetPassword = (record: any) => {
+    setIsSetPasswordModalOpen(true);
+    setRecordForSetPassword(record);
+  };
+
+  const handleCheckInputPassword = async () => {
+    await CheckPasswordForDoc(recordForCheckPassword.id, inputPassword)
+      .then((res: any) => {
+        if (res.data === true) {
+          switch (action) {
+            case "view":
+              setIsOpenModalView(true);
+              setSelectedRecord(recordForCheckPassword);
+              break;
+            case "edit":
+              handleOpenEditModal(recordForCheckPassword);
+              setRecordSelected(recordForCheckPassword);
+              break;
+            case "delete":
+              Modal.confirm({
+                title: "Xóa tài liệu",
+                content: "Bạn có chắc chắn muốn xóa tài liệu này không?",
+                okText: "Có",
+                cancelText: "Không",
+                centered: true,
+                onOk: () => handleDeleteConfirm(recordForCheckPassword),
+              });
+              break;
+            case "download":
+              downloadFile(recordForCheckPassword);
+              break;
+            case "share":
+              handleShareFile(recordForCheckPassword);
+              break;
+            case "set-password":
+              ShowToast("warning","Thông báo","Tài liệu đã được đặt mật khẩu!",3);
+              break;
+            default:
+              break;
+          }
+          setInputPassword("");
+          setIsOpenModalInputPassword(false);
+        } else {
+          ShowToast("error","Lỗi","Mật khẩu không đúng, vui lòng thử lại!",3);
+        }
+      })
+      .catch((err: any) => {
+        ShowToast("error", "Lỗi", "Có lỗi xảy ra", 3);
+      });
   };
 
   return (
@@ -750,7 +921,7 @@ const QuanLyLuuTru = () => {
             setIsOpenModalView={setIsOpenModalView}
             handleDeleteConfirm={handleDeleteConfirm}
             handleOpenEditModal={handleOpenEditModal}
-            handleOpenViewModal={()=> {}}
+            handleOpenViewModal={() => {}}
             queryParams={dataAdvancedSearch}
           />
         )}
@@ -765,11 +936,30 @@ const QuanLyLuuTru = () => {
           onCancel={() => setIsOpenModalImport(false)}
         >
           <UploadFileCustom
-            acceptedFileTypes={[".docx", ".pdf", ".doc",".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".txt", ".pptx", ".ppt"]}
+            acceptedFileTypes={[
+              ".docx",
+              ".pdf",
+              ".doc",
+              ".xlsx",
+              ".xls",
+              ".png",
+              ".jpg",
+              ".jpeg",
+              ".txt",
+              ".pptx",
+              ".ppt",
+            ]}
             handleClose={() => setIsOpenModalImport(false)}
             title="Upload tài liệu"
             isRefreshData={isRefreshData}
             setIsRefreshData={setIsRefreshData}
+            isTuyetMat={false}
+            openModalSetPassword={isSetPasswordModalOpen}
+            setOpenModalSetPassword={setIsSetPasswordModalOpen}
+            setRecordForSetPassword={setRecordForSetPassword}
+            recordSetPassword={recordForSetPassword}
+            isBatBuoc={isBatBuoc}
+            setIsBatBuoc={setIsBatBuoc}
           />
         </Modal>
 
@@ -790,36 +980,81 @@ const QuanLyLuuTru = () => {
           onCancel={() => setIsShareModalOpen(false)}
           okText="Chia sẻ"
           cancelText="Hủy"
-          onOk={()=> {hanldeOkShareDoc()}}
+          onOk={() => {
+            hanldeOkShareDoc();
+          }}
           loading={loading}
         >
-          <FormSelect 
+          <FormSelect
             selectType="selectApi"
-            src={`api/nguoi-dung/get-colleague?nguoi_dung_id=${useId}&tai_lieu_id=${shareFile ? shareFile.id : ""}`}
+            src={`api/nguoi-dung/get-colleague?nguoi_dung_id=${useId}&tai_lieu_id=${
+              shareFile ? shareFile.id : ""
+            }`}
             labelField="ten"
             valueField={"id"}
             placeholder="Thêm người"
-            style={{ width: '100%' }}
+            style={{ width: "100%" }}
             mode="multiple"
             click_to_reload
             onChange={setSelectedUser}
           />
           <div>
-            <Typography.Title level={5}>Những người có quyền truy cập</Typography.Title>
+            <Typography.Title level={5}>
+              Những người có quyền truy cập
+            </Typography.Title>
             {/* // danh sách người được chia sẻ */}
-            {
-              lstUserInFile.map((item:any) => {
-                return (
-                  <div style={{display:"flex", justifyContent:"space-between", margin:"5px 0",padding:"3px 0",borderBottom:"1px solid #d9d9d999"}}>
-                    {item.ten} 
+            {lstUserInFile.map((item: any) => {
+              return (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    margin: "5px 0",
+                    padding: "3px 0",
+                    borderBottom: "1px solid #d9d9d999",
+                  }}
+                >
+                  {item.ten}
 
-                    {/* <DeleteOutlined className="delete-outlined" /> */}
-                    <Tag color="geekblue">{item.ten_nhom_nguoi_dung}</Tag>
-                  </div>
-                )
-              })
-            }
+                  {/* <DeleteOutlined className="delete-outlined" /> */}
+                  <Tag color="geekblue">{item.ten_nhom_nguoi_dung}</Tag>
+                </div>
+              );
+            })}
           </div>
+        </Modal>
+
+        {/* modal set password */}
+        <SetPasswordModal
+          open={isSetPasswordModalOpen}
+          record={recordForSetPassword}
+          onClose={() => setIsSetPasswordModalOpen(false)}
+          isBatBuoc={isBatBuoc}
+          setIsBatBuoc={setIsBatBuoc}
+          setIsOpenModalImport={setIsOpenModalImport}
+          isRefreshData={isRefreshData}
+          setIsRefreshData={setIsRefreshData}
+        />
+
+        {/* modal input password */}
+        <Modal
+          open={isOpenModalInputPassword}
+          title="Nhập mật khẩu"
+          centered
+          cancelText="Hủy"
+          okText="Xác nhận"
+          onCancel={() => setIsOpenModalInputPassword(false)}
+          onOk={handleCheckInputPassword}
+        >
+          <FormItemInput
+            label="Mật khẩu"
+            placeholder="Nhập mật khẩu tài liệu"
+            type="password"
+            value={inputPassword}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setInputPassword(e.target.value)
+            }
+          />
         </Modal>
       </Spin>
     </div>

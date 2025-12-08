@@ -30,13 +30,14 @@ import ButtonCustom from "../../../Components/button/button";
 import TableComponent from "../../../Components/table";
 import { MenuProps } from "antd/lib";
 import { formatDateTime, formatFileSize } from "../../../Utils/common";
-import { DownloadFile, HandleShareFile } from "../../../services/tai-lieu";
+import { CheckHasPassword, CheckPasswordForDoc, DownloadFile, HandleShareFile } from "../../../services/tai-lieu";
 import ShowToast from "../../../Components/show-toast/ShowToast";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import { GetUserByDoc } from "../../../services/nguoi-dung";
 import { useLocation, useNavigate } from "react-router-dom";
 import PdfPreview from "../components/previewComponent";
 import DocxPreview from "../components/docxPreview";
+import SetPasswordModal from "../components/ModalDatMatKhau";
 
 type KetQuaTimKiemProps = {
   thu_muc_id?: any;
@@ -197,6 +198,27 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
       setDocInfor(docInfor);    
     },[docInfor])
 
+  const CheckDocHasPass = async (record: any) => {
+      setLoading(true);
+      var isCheck = false;
+      await CheckHasPassword(record.id)
+        .then((res: any) => {
+          if (res.data === true) {
+            isCheck = true;
+          } else {
+            isCheck = false;
+          }
+        })
+        .catch((err: any) => {
+          isCheck = false;
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+  
+      return isCheck;
+    };
+
   const column = [
     {
       title: "Tài liệu",
@@ -212,6 +234,33 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
               getIconByExtension(record.extension)
             )}{" "}
             {data}
+          </span>
+        );
+      },
+    },
+    {
+      title: "Cấp độ",
+      dataIndex: "cap_do",
+      key: "cap_do",
+      width: "10%",
+      render: (data: any, __: any, index: number) => {
+        return (
+          <span>
+            {data === 1 ? (
+              <Tag key={index} color={"green"}>
+                Mật
+              </Tag>
+            ) : data === 2 ? (
+              <Tag key={index} color={"blue"}>
+                Tối mật
+              </Tag>
+            ) : data === 3 ? (
+              <Tag key={index} color={"red"}>
+                Tuyệt mật
+              </Tag>
+            ) : (
+              <span style={{ color: "red" }}>Không xác định</span>
+            )}
           </span>
         );
       },
@@ -261,14 +310,14 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
       key: "action",
       width: "15%",
       fixed: "right" as "right",
-      render: (text: any, record: any) => {    
+      render: (text: any, record: any) => {
         const menuItems: MenuProps["items"] = [
           perms.includes("PERM_VIEW") && {
             key: "view",
             label: "Xem trước",
           },
           perms.includes("PERM_EDIT") &&
-            record.ten_chu_so_huu === userName && {
+            (record.ten_chu_so_huu === userName || record.nguoi_tao === userName) && {
               key: "edit",
               label: "Đổi tên",
             },
@@ -280,7 +329,15 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
               </span>
             ),
           },
-          record.ten_chu_so_huu === userName && {
+          {
+            key: "set-password",
+            label: (
+              <span onClick={() => handleSetPassword(record)}>
+                Đặt mật khẩu cho tài liệu
+              </span>
+            ),
+          },
+          (record.ten_chu_so_huu === userName || record.nguoi_tao === userName) && {
             key: "share",
             label: (
               <span onClick={() => handleShareFile(record)}>
@@ -289,46 +346,141 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
             ),
           },
           perms.includes("PERM_DELETE") &&
-            record.ten_chu_so_huu === userName && {
+            (record.ten_chu_so_huu === userName || record.nguoi_tao === userName) && {
               key: "delete",
               label: <span style={{ color: "red" }}>Xóa tài liệu</span>,
             },
         ].filter(Boolean) as MenuProps["items"];
 
-        const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
-          if (key === "view") {
-            setIsOpenModalView(true);
-            handleOpenViewModal(record)
-          }
-          if (key === "edit") {
-            handleOpenEditModal(record);
-            setRecordSelected(record);
-          }
-          if (key === "delete") {
-            Modal.confirm({
-              title: "Xóa tài liệu",
-              content: "Bạn có chắc chắn muốn xóa tài liệu này không?",
-              okText: "Có",
-              cancelText: "Không",
-              centered: true,
-              onOk: () => handleDeleteConfirm(record),
-            });
+        const handleMenuClick: MenuProps["onClick"] = async ({ key }) => {
+          var checkdoc = await CheckDocHasPass(record);
+
+          if (!checkdoc) {
+            if (key === "view") {
+              setIsOpenModalView(true);
+              setSelectedRecord(record);
+            }
+            if (key === "edit") {
+              handleOpenEditModal(record);
+              setRecordSelected(record);
+            }
+            if (key === "delete") {
+              Modal.confirm({
+                title: "Xóa tài liệu",
+                content: "Bạn có chắc chắn muốn xóa tài liệu này không?",
+                okText: "Có",
+                cancelText: "Không",
+                centered: true,
+                onOk: () => handleDeleteConfirm(record),
+              });
+            }
+          } else {
+            ShowToast(
+              "warning",
+              "Cảnh báo",
+              "Tài liệu được đặt mật khẩu. Vui lòng nhập mật khẩu để mở!",
+              3
+            );
+            setIsOpenModalInputPassword(true);
+            setRecordForCheckPassword(record);
+            if (key === "view") {
+              setAction("view");
+            }
+            if (key === "edit") {
+              setAction("edit");
+            }
+            if (key === "delete") {
+              setAction("delete");
+            }
+            if (key === "download") {
+              setAction("download");
+            }
+            if (key === "share") {
+              setAction("share");
+            }
+            if(key === "set-password"){
+              setAction("set-password");
+            }
           }
         };
 
         return (
-          record.is_folder !== true && (
-            <Dropdown
-              menu={{ items: menuItems, onClick: handleMenuClick }}
-              trigger={["click"]}
-            >
-              <Button type="text" icon={<MoreOutlined />} />
-            </Dropdown>
-          )
+          <Dropdown
+            menu={{ items: menuItems, onClick: handleMenuClick }}
+            trigger={["click"]}
+          >
+            <Button type="text" icon={<MoreOutlined />} />
+          </Dropdown>
         );
       },
     },
   ];
+
+
+  //đặt mật khẩu cho tài liệu
+    const [isSetPasswordModalOpen, setIsSetPasswordModalOpen] =
+      useState<boolean>(false);
+    const [isOpenModalInputPassword, setIsOpenModalInputPassword] =
+      useState<boolean>(false);
+    const [recordForCheckPassword, setRecordForCheckPassword] =
+      useState<any>(null);
+    const [action, setAction] = useState<"view" | "edit" | "delete" | "set-password" | "download" | "share" | null>(null);
+    const [recordForSetPassword, setRecordForSetPassword] = useState<any>(null);
+    const [isBatBuoc, setIsBatBuoc] = useState<boolean>(false);
+    const [inputPassword, setInputPassword] = useState<string>("");
+    const [selectedRecord, setSelectedRecord] = useState<any>();
+    const [isOpenModalImport, setIsOpenModalImport] = useState<boolean>(false);
+  
+    const handleSetPassword = (record: any) => {
+      setIsSetPasswordModalOpen(true);
+      setRecordForSetPassword(record);
+    };
+  
+    const handleCheckInputPassword = async () => {
+      await CheckPasswordForDoc(recordForCheckPassword.id, inputPassword)
+        .then((res: any) => {
+          if (res.data === true) {
+            switch (action) {
+              case "view":
+                setIsOpenModalView(true);
+                setSelectedRecord(recordForCheckPassword);
+                break;
+              case "edit":
+                handleOpenEditModal(recordForCheckPassword);
+                setRecordSelected(recordForCheckPassword);
+                break;
+              case "delete":
+                Modal.confirm({
+                  title: "Xóa tài liệu",
+                  content: "Bạn có chắc chắn muốn xóa tài liệu này không?",
+                  okText: "Có",
+                  cancelText: "Không",
+                  centered: true,
+                  onOk: () => handleDeleteConfirm(recordForCheckPassword),
+                });
+                break;
+              case "download":
+                downloadFile(recordForCheckPassword);
+                break;
+              case "share":
+                handleShareFile(recordForCheckPassword);
+                break;
+              case "set-password":
+                ShowToast("warning","Thông báo","Tài liệu đã được đặt mật khẩu!",3);
+                break;
+              default:
+                break;
+            }
+            setInputPassword("");
+            setIsOpenModalInputPassword(false);
+          } else {
+            ShowToast("error","Lỗi","Mật khẩu không đúng, vui lòng thử lại!",3);
+          }
+        })
+        .catch((err: any) => {
+          ShowToast("error", "Lỗi", "Có lỗi xảy ra", 3);
+        });
+    };
 
   return (
     <div>
@@ -472,6 +624,39 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* modal set password */}
+        <SetPasswordModal
+          open={isSetPasswordModalOpen}
+          record={recordForSetPassword}
+          onClose={() => setIsSetPasswordModalOpen(false)}
+          isBatBuoc={isBatBuoc}
+          setIsBatBuoc={setIsBatBuoc}
+          setIsOpenModalImport={setIsOpenModalImport}
+          isRefreshData={isRefreshData}
+          setIsRefreshData={setIsRefreshData}
+        />
+
+        {/* modal input password */}
+        <Modal
+          open={isOpenModalInputPassword}
+          title="Nhập mật khẩu"
+          centered
+          cancelText="Hủy"
+          okText="Xác nhận"
+          onCancel={() => setIsOpenModalInputPassword(false)}
+          onOk={handleCheckInputPassword}
+        >
+          <FormItemInput
+            label="Mật khẩu"
+            placeholder="Nhập mật khẩu tài liệu"
+            type="password"
+            value={inputPassword}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setInputPassword(e.target.value)
+            }
+          />
+        </Modal>
     </div>
   );
 };

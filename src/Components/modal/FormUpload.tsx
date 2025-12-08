@@ -40,6 +40,7 @@ import { UploadTaiLieu } from "../../services/tai-lieu";
 import { set } from "lodash";
 import { formatFileSize } from "../../Utils/common";
 import { getAll } from "../../services/cau-hinh-file";
+import { getCapDoById } from "../../services/quan-tri-danh-muc/danh-muc-cap-do";
 type PreChildrenProps = {
   name?: string;
   props?: any;
@@ -66,6 +67,7 @@ type UploadComponentProps = {
   type_tham_dinh?: "chu-de" | "cau-hoi" | "ma-tran-de";
   //preview
   isPreview?: boolean;
+  isTuyetMat?: boolean;
   preview_modal?: string;
   previewTitle?: string;
   widthPreviewModal?: number;
@@ -95,17 +97,24 @@ type UploadComponentProps = {
   pattern?: string | string[];
   dataNhanXet?: string;
   setLoadingParent?: (load: boolean) => void;
-  // ma trận
-  isDowloadFileThamDinhMaTran?: boolean;
+  //set file de preview
+  openModalSetPassword?: boolean;
+  setOpenModalSetPassword?: (val: boolean) => void;
+  recordSetPassword?: any;
   thu_muc_id?: string;
+  setIsBatBuoc?: (val: boolean) => void;
+  isBatBuoc?: boolean ;
 
   isRefreshData: boolean;
   setIsRefreshData: (val: boolean) => void;
+  setRecordForSetPassword: (val: any) => void;
 };
 
 const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
   title,
   thu_muc_id,
+  isBatBuoc,
+  setIsBatBuoc,
   setLoadingParent,
   rowPreChildren = 3,
   type,
@@ -139,6 +148,7 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
   preChildren,
   //preview
   isPreview = false,
+  isTuyetMat,
   preview_modal,
   previewTitle,
   widthPreviewModal,
@@ -153,9 +163,12 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
   filterPath,
   pattern,
   dataNhanXet,
-  isDowloadFileThamDinhMaTran,
+  openModalSetPassword,
+  recordSetPassword,
   isRefreshData,
   setIsRefreshData,
+  setOpenModalSetPassword,
+  setRecordForSetPassword,
   ...rest
 }) => {
   // fix refresh data sau khi thẩm định
@@ -810,7 +823,7 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
   ];
 
   //handle OK
-  const handleOk = () => {
+  const handleOk = async () => {
     setLoading(true);
     const formData = new FormData();
     formData.append("cap_do_id", mucDo);
@@ -822,14 +835,24 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
       formData.append("files", file);
     });
     
-    UploadTaiLieu(formData)
-    .then((res) => {
+    await UploadTaiLieu(formData)
+    .then(async (res) => {
       if (res.status === 200) {
-        ShowToast("success", "Thành công", "Tải file thành công");
-        setFiles([]);
-        setExcelFileForDetail(undefined);
-        setIsRefreshData(!isRefreshData);
-        closeModalAndRefresh();
+        var capdo = await getCapDoById(mucDo)
+        var maCapDo = capdo?.data?.ma === "mat" ? 1 : (capdo?.data?.ma === "toi-mat" ? 2 : (capdo?.data?.ma === "tuyet-mat" ? 3 : 0));
+        if(maCapDo === 3){
+          setOpenModalSetPassword?.(true);
+          setIsBatBuoc?.(true);
+          console.log("res.data::", res.data);
+          setRecordForSetPassword?.(res.data);
+        }
+        else{
+          ShowToast("success", "Thành công", "Tải file thành công");
+          setFiles([]);
+          setExcelFileForDetail(undefined);
+          setIsRefreshData(!isRefreshData);
+          closeModalAndRefresh();
+        }
       } else {
         ShowToast("error", "Thất bại", res?.data?.message ?? "Lỗi hệ thống");
       }
@@ -843,7 +866,7 @@ const UploadFileCustom: FunctionComponent<UploadComponentProps> = ({
       }
     })
     .finally(() => {
-      setLoading(false);
+      //setLoading(false);
       setLoadingParent?.(false);
     });
   };
