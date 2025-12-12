@@ -87,7 +87,7 @@ const HeaderLayout = () => {
       {/* Logo và tiêu đề */}
       <div style={{ display: "flex", alignItems: "center", color: "#fff" }}>
         <img
-          src="/images/QuocHuy.png" // thay bằng link logo của bạn
+          src="/images/cloud_logo.png" // thay bằng link logo của bạn
           alt="Logo"
           style={{ height: 50, marginRight: 12, marginLeft: 12 }}
         />
@@ -95,7 +95,7 @@ const HeaderLayout = () => {
           style={{ display: "flex", flexDirection: "column", lineHeight: 1.6 }}
         >
           <span style={{ fontWeight: "bold", fontSize: 16 }}>
-            Cục quản lý chất lượng
+            Giải pháp lưu trữ tin cậy cho mọi tổ chức
           </span>
           <span style={{ fontSize: 15 }}>PHẦN MỀM QUẢN LÝ LƯU TRỮ</span>
         </div>

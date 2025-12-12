@@ -259,7 +259,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
                 Tuyệt mật
               </Tag>
             ) : (
-              <span style={{ color: "red" }}>Không xác định</span>
+              <span>-</span>
             )}
           </span>
         );

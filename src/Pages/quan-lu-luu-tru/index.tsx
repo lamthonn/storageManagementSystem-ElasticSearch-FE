@@ -333,7 +333,7 @@ const QuanLyLuuTru = () => {
                 Tuyệt mật
               </Tag>
             ) : (
-              <span style={{ color: "red" }}>Không xác định</span>
+              <span>-</span>
             )}
           </span>
         );
