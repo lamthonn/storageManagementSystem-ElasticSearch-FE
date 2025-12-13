@@ -52,13 +52,13 @@ const Login: React.FC = () => {
       {/* Tiêu đề */}
       <div style={{ color: "#fff", textAlign: "left", marginBottom: 20, width: 550, lineHeight:"1.5", display: "flex", alignItems: "center" }}>
         <img
-          src="/images/QuocHuy.png"
+          src="/images/cloud_logo.png"
           alt="Quốc hiệu"
           style={{ height: 70, marginRight: 12 }}
         />
         <div>
-          <h2 style={{ margin: 0, fontWeight: "bold", fontSize: "29px" }}>CỤC QUẢN LÝ CHẤT LƯỢNG</h2>
-          <h3 style={{ margin: 0 }}>PHẦN MỀM QUẢN LÝ LƯU TRỮ</h3>
+          <h2 style={{ margin: 0, fontWeight: "bold", fontSize: "29px" }}>PHẦN MỀM QUẢN LÝ LƯU TRỮ</h2>
+          <h3 style={{ margin: 0 }}>Giải pháp lưu trữ tin cậy cho mọi tổ chức</h3>
         </div>
       </div>
 

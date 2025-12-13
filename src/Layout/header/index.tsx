@@ -95,9 +95,9 @@ const HeaderLayout = () => {
           style={{ display: "flex", flexDirection: "column", lineHeight: 1.6 }}
         >
           <span style={{ fontWeight: "bold", fontSize: 16 }}>
-            Giải pháp lưu trữ tin cậy cho mọi tổ chức
+            PHẦN MỀM QUẢN LÝ LƯU TRỮ
           </span>
-          <span style={{ fontSize: 15 }}>PHẦN MỀM QUẢN LÝ LƯU TRỮ</span>
+          <span style={{ fontSize: 15 }}>Giải pháp lưu trữ tin cậy cho mọi tổ chức</span>
         </div>
       </div>
 
