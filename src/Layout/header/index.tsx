@@ -10,6 +10,7 @@ import ShowToast from "../../Components/show-toast/ShowToast";
 import { useEffect, useState } from "react";
 import ModalThongTinNguoiDung from "./components/thong-tin-nguoi-dung";
 import ModalDoiNhomNguoiDung from "./components/doi-nhom-nguoi-dung";
+import DoiMatKhauModal from "./components/doi-mat-khau";
 
 const { Header } = Layout;
 interface AuthInterface extends JwtPayload {
@@ -43,6 +44,7 @@ const HeaderLayout = () => {
 
   const [isOpenModalUserInfor, setIsOpenModalUserInfor] = useState<boolean>(false)
   const [isOpenModalChangeRole, setIsOpenModalChangeRole] = useState<boolean>(false)
+  const [isOpenModalChangePassword, setIsOpenModalChangePassword] = useState<boolean>(false)
   const handleClickMenuDrop = (key:any) => {
     if(key.key === "profile"){
       setIsOpenModalUserInfor(true)
@@ -51,11 +53,16 @@ const HeaderLayout = () => {
     if(key.key === "changeRole"){
       setIsOpenModalChangeRole(true)
     }
+    
+    if(key.key === "changePassword"){
+      setIsOpenModalChangePassword(true)
+    }
   }
 
   const userMenu = (
     <Menu onClick={handleClickMenuDrop}>
       <Menu.Item key="profile">Thông tin người dùng</Menu.Item>
+      <Menu.Item key="changePassword">Đổi mật khẩu</Menu.Item>
       <Menu.Item key="changeRole">Thay đổi quyền truy cập</Menu.Item>
       <Menu.Item key="logout" onClick={handleLogout}>Đăng xuất</Menu.Item>
     </Menu>
@@ -83,6 +90,11 @@ const HeaderLayout = () => {
         isOpen = {isOpenModalChangeRole}
         onClose={()=> {setIsOpenModalChangeRole(false)}}
         
+      />
+
+      <DoiMatKhauModal
+        isOpenModal={isOpenModalChangePassword}
+        setIsOpenModal={setIsOpenModalChangePassword}
       />
       {/* Logo và tiêu đề */}
       <div style={{ display: "flex", alignItems: "center", color: "#fff" }}>

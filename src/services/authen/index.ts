@@ -17,3 +17,7 @@ export const authService = {
 export const refreshToken: (body: any) => Promise<any> = (body: any) => {
   return axiosCustom.post("/api/authen/refresh-token", body);
 };
+
+export const changePassword: (body: any) => Promise<any> = (body: any) => {
+  return axiosConfig.put("/api/authen/doi-mat-khau", body);
+};
