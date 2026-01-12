@@ -197,7 +197,7 @@ const QuanLyNhatKyHeThong = () => {
       dataIndex: "ngay_tao",
       key: "ngay_tao",
       render: (data: any, __: any, index: number) => {
-        return <span>{formatDateTime(data)}</span>;
+        return <span>{formatDateTime(__.timeStamp)}</span>;
       },
       width: "15%",
     },
