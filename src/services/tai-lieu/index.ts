@@ -69,7 +69,7 @@ export const HandleGiaiMa = async (data: any) => {
 
 export const SetPasswordForDoc = async (tai_lieu_id: any, password: string) => {
     if(true){
-        return await axiosConfig.put(`api/quan-ly-tai-lieu/set-password?tai_lieu_id=${tai_lieu_id}`, password);
+        return await axiosConfig.put(`api/quan-ly-tai-lieu/set-password?tai_lieu_id=${tai_lieu_id}`, JSON.stringify(password));
     }
 };
 

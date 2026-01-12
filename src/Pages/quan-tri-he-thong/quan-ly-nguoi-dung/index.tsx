@@ -479,7 +479,8 @@ const QuanLyNguoiDung = () => {
           request={{
             keySearch: tenDM,
             trang_thai: tinhTrang,
-            ngay_tao: ngayTao,
+            fromDate: ngayTao ? ngayTao[0].toISOString() : null,
+            toDate: ngayTao ? ngayTao[1].toISOString() : null,
           }}
           rowSelection={{
             type: "checkbox",

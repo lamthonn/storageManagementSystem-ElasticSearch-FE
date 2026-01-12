@@ -324,14 +324,24 @@ const QuanLyNhomNguoiDung = () => {
     if(isEdit){
       lstNguoiDungs = formEdit.getFieldValue("ds_nguoi_dung");
     }
-    await axiosConfig
-      .post("api/nguoi-dung/get-by-ids", lstNguoiDungs)
-      .then((response: any) => {
-        setLstNguoiDungEdit(response.data);
-      })
-      .catch((error: any) => {
-        ShowToast("error", "Thông báo", "Lấy danh sách người dùng thất bại", 3);
-      });
+
+    if(!lstNguoiDungs || lstNguoiDungs.length === 0){
+      ShowToast("warning", "Thông báo", "Vui lòng chọn người dùng để thêm vào nhóm", 3);
+      setLoading(false);
+    }
+    else{
+      await axiosConfig
+        .post("api/nguoi-dung/get-by-ids", lstNguoiDungs)
+        .then((response: any) => {
+          setLstNguoiDungEdit(response.data);
+        })
+        .catch((error: any) => {
+          ShowToast("error", "Thông báo", "Lấy danh sách người dùng thất bại", 3);
+        })
+        .finally(()=> {
+          setLoading(false);
+        })
+    }
   };
 
   return (
@@ -470,8 +480,9 @@ const QuanLyNhomNguoiDung = () => {
           src="api/nhom-nguoi-dung/get-all"
           request={{
             keySearch: tenDM,
-            trang_thai: tinhTrang,
-            ngay_tao: ngayTao,
+            trang_thai: tinhTrang === true ? 1 : tinhTrang === false ? 0 : null,
+            fromDate: ngayTao ? ngayTao[0].toISOString() : null,
+            toDate: ngayTao ? ngayTao[1].toISOString() : null,
           }}
           rowSelection={{
             type: "checkbox",
