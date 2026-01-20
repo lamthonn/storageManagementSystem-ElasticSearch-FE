@@ -316,15 +316,14 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
             key: "view",
             label: "Xem trước",
           },
-          perms.includes("PERM_EDIT") &&
-            (record.ten_chu_so_huu === userName || record.nguoi_tao === userName) && {
+          perms.includes("PERM_EDIT") && (record.ten_chu_so_huu === userName || record.nguoi_tao === userName) && {
               key: "edit",
               label: "Đổi tên",
             },
           {
             key: "download",
             label: (
-              <span onClick={() => downloadFile(record)}>
+              <span>
                 Tải tài liệu xuống
               </span>
             ),
@@ -332,7 +331,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
           {
             key: "set-password",
             label: (
-              <span onClick={() => handleSetPassword(record)}>
+              <span>
                 Đặt mật khẩu cho tài liệu
               </span>
             ),
@@ -340,7 +339,7 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
           (record.ten_chu_so_huu === userName || record.nguoi_tao === userName) && {
             key: "share",
             label: (
-              <span onClick={() => handleShareFile(record)}>
+              <span>
                 Chia sẻ tài liệu
               </span>
             ),
@@ -373,6 +372,16 @@ const KetQuaTimKiem: React.FC<KetQuaTimKiemProps> = ({
                 centered: true,
                 onOk: () => handleDeleteConfirm(record),
               });
+            }
+            if(key === "download"){
+              downloadFile(record);
+            }
+            if (key === "set-password") {
+              handleSetPassword(record);
+            }
+
+            if (key === "share") {
+              handleShareFile(record);
             }
           } else {
             ShowToast(

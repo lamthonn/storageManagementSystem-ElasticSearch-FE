@@ -59,6 +59,7 @@ import { useNavigate } from "react-router-dom";
 import { GetUserByDoc } from "../../services/nguoi-dung";
 import SetPasswordModal from "./components/ModalDatMatKhau";
 import { set } from "lodash";
+import { GuiThongBao } from "../../services/thong-bao";
 
 interface AuthInterface extends JwtPayload {
   id: string;
@@ -381,46 +382,76 @@ const QuanLyLuuTru = () => {
       width: "15%",
       fixed: "right" as "right",
       render: (text: any, record: any) => {
-        const menuItems: MenuProps["items"] = [
-          perms.includes("PERM_VIEW") && {
-            key: "view",
-            label: "Xem trước",
-          },
-          perms.includes("PERM_EDIT") &&
-            record.nguoi_tao === userName && {
-              key: "edit",
-              label: "Đổi tên",
-            },
-          {
-            key: "download",
-            label: (
-              <span onClick={() => downloadFile(record)}>
-                Tải tài liệu xuống
-              </span>
-            ),
-          },
-          {
-            key: "set-password",
-            label: (
-              <span onClick={() => handleSetPassword(record)}>
-                Đặt mật khẩu cho tài liệu
-              </span>
-            ),
-          },
-          record.nguoi_tao === userName && {
-            key: "share",
-            label: (
-              <span onClick={() => handleShareFile(record)}>
-                Chia sẻ tài liệu
-              </span>
-            ),
-          },
-          perms.includes("PERM_DELETE") &&
-            record.nguoi_tao === userName && {
-              key: "delete",
-              label: <span style={{ color: "red" }}>Xóa tài liệu</span>,
-            },
-        ].filter(Boolean) as MenuProps["items"];
+        const menuItems: MenuProps["items"] =
+          record.is_access === true
+            ? ([
+                perms.includes("PERM_VIEW") && {
+                  key: "view",
+                  label: "Xem trước",
+                },
+                perms.includes("PERM_EDIT") &&
+                  record.nguoi_tao === userName && {
+                    key: "edit",
+                    label: "Đổi tên",
+                  },
+                {
+                  key: "download",
+                  label: (
+                    <span>
+                      Tải tài liệu xuống
+                    </span>
+                  ),
+                },
+                {
+                  key: "set-password",
+                  label: (
+                    <span>
+                      Đặt mật khẩu cho tài liệu
+                    </span>
+                  ),
+                },
+                record.nguoi_tao === userName && {
+                  key: "share",
+                  label: (
+                    <span>
+                      Chia sẻ tài liệu
+                    </span>
+                  ),
+                },
+                perms.includes("PERM_DELETE") &&
+                  record.nguoi_tao === userName && {
+                    key: "delete",
+                    label: <span style={{ color: "red" }}>Xóa tài liệu</span>,
+                  },
+              ].filter(Boolean) as MenuProps["items"])
+            : ([
+                {
+                  key: "yeu-cau-truy-cap",
+                  label: (
+                    <span onClick={async () => {
+                      var notificationRequest = {
+                        tai_lieu_id: record.id,
+                        tieu_de: "Yêu cầu truy cập tài liệu",
+                        noi_dung: `Người dùng ${userName} yêu cầu truy cập tài liệu "${record.ten}".`,
+                        nguoi_gui: userName,
+                        nguoi_nhan: record.nguoi_tao,
+                        ngay_gui: new Date(),
+                        da_xem: false
+                      }
+                      
+                      await GuiThongBao(notificationRequest)
+                      .then((res:any) => {
+                        ShowToast("success", "Thông báo", "Gửi yêu cầu truy cập thành công", 3);
+                      })
+                      .catch((err:any) => {
+                        ShowToast("error", "Lỗi", "Gửi yêu cầu truy cập thất bại", 3);
+                      });
+                    }}>
+                      Yêu cầu quyền truy cập
+                    </span>
+                  ),
+                },
+              ].filter(Boolean) as MenuProps["items"]);
 
         const handleMenuClick: MenuProps["onClick"] = async ({ key }) => {
           var checkdoc = await CheckDocHasPass(record);
@@ -444,12 +475,22 @@ const QuanLyLuuTru = () => {
                 onOk: () => handleDeleteConfirm(record),
               });
             }
+            if(key === "download"){
+              downloadFile(record);
+            }
+            if (key === "set-password") {
+              handleSetPassword(record);
+            }
+
+            if (key === "share") {
+              handleShareFile(record);
+            }
           } else {
             ShowToast(
               "warning",
               "Cảnh báo",
               "Tài liệu được đặt mật khẩu. Vui lòng nhập mật khẩu để mở!",
-              3
+              3,
             );
             setIsOpenModalInputPassword(true);
             setRecordForCheckPassword(record);
@@ -468,7 +509,7 @@ const QuanLyLuuTru = () => {
             if (key === "share") {
               setAction("share");
             }
-            if(key === "set-password"){
+            if (key === "set-password") {
               setAction("set-password");
             }
           }
@@ -619,7 +660,9 @@ const QuanLyLuuTru = () => {
     useState<boolean>(false);
   const [recordForCheckPassword, setRecordForCheckPassword] =
     useState<any>(null);
-  const [action, setAction] = useState<"view" | "edit" | "delete" | "set-password" | "download" | "share" | null>(null);
+  const [action, setAction] = useState<
+    "view" | "edit" | "delete" | "set-password" | "download" | "share" | null
+  >(null);
   const [recordForSetPassword, setRecordForSetPassword] = useState<any>(null);
   const [isBatBuoc, setIsBatBuoc] = useState<boolean>(false);
   const [inputPassword, setInputPassword] = useState<string>("");
@@ -659,7 +702,12 @@ const QuanLyLuuTru = () => {
               handleShareFile(recordForCheckPassword);
               break;
             case "set-password":
-              ShowToast("warning","Thông báo","Tài liệu đã được đặt mật khẩu!",3);
+              ShowToast(
+                "warning",
+                "Thông báo",
+                "Tài liệu đã được đặt mật khẩu!",
+                3,
+              );
               break;
             default:
               break;
@@ -667,7 +715,12 @@ const QuanLyLuuTru = () => {
           setInputPassword("");
           setIsOpenModalInputPassword(false);
         } else {
-          ShowToast("error","Lỗi","Mật khẩu không đúng, vui lòng thử lại!",3);
+          ShowToast(
+            "error",
+            "Lỗi",
+            "Mật khẩu không đúng, vui lòng thử lại!",
+            3,
+          );
         }
       })
       .catch((err: any) => {
@@ -770,7 +823,7 @@ const QuanLyLuuTru = () => {
                         value={ngayTao}
                         onChange={(
                           dates: any | null,
-                          dateString: [string, string]
+                          dateString: [string, string],
                         ) => setNgayTao(dates)}
                         label="Ngày tạo"
                         format="DD/MM/YYYY HH:mms"
@@ -782,7 +835,7 @@ const QuanLyLuuTru = () => {
                         value={ngayChinhSua}
                         onChange={(
                           dates: any | null,
-                          dateString: [string, string]
+                          dateString: [string, string],
                         ) => setNgayChinhSua(dates)}
                         label="Ngày sửa đổi"
                         format="DD/MM/YYYY HH:mms"
@@ -843,7 +896,7 @@ const QuanLyLuuTru = () => {
                         "warning",
                         "Thông báo",
                         "Vui lòng chọn ít nhất một tài liệu để xóa.",
-                        3
+                        3,
                       );
                     }
                   }}

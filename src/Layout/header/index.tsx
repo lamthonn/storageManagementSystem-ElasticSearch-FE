@@ -1,5 +1,5 @@
-import { Layout, Input, Avatar, Space, Menu, Dropdown } from "antd";
-import { SearchOutlined, UserOutlined } from "@ant-design/icons";
+import { Layout, Input, Avatar, Space, Menu, Dropdown, Badge } from "antd";
+import { BellOutlined, SearchOutlined, UserOutlined } from "@ant-design/icons";
 import "./headerLayout.scss";
 import "../../styles/_themes.scss";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import ModalThongTinNguoiDung from "./components/thong-tin-nguoi-dung";
 import ModalDoiNhomNguoiDung from "./components/doi-nhom-nguoi-dung";
 import DoiMatKhauModal from "./components/doi-mat-khau";
+import NotificationDropdown from "./components/noti-component/mockNotifications";
 
 const { Header } = Layout;
 interface AuthInterface extends JwtPayload {
@@ -115,17 +116,18 @@ const HeaderLayout = () => {
 
       {/* Thanh tìm kiếm + icon + user */}
       <Space size="large" align="center" style={{ marginRight: 12 }}>
-        {/* Thanh tìm kiếm */}
-        <Input
-          placeholder="Tìm kiếm..."
-          prefix={<SearchOutlined style={{ color: "#999" }} />}
-          style={{ width: 250, borderRadius: 20 }}
-        />
-
         {/* Icon thông báo */}
-        {/* <Badge count={11} offset={[-2, 2]}>
-          <BellOutlined style={{ fontSize: 20, color: "#fff" }} />
-        </Badge> */}
+        <Dropdown
+          overlay={<NotificationDropdown />}
+          trigger={["click"]}
+          placement="bottomRight"
+        >
+          <Badge count={11} offset={[-2, 2]}>
+            <BellOutlined
+              style={{ fontSize: 20, color: "#fff", cursor: "pointer" }}
+            />
+          </Badge>
+        </Dropdown>
 
         {/* Avatar + tên người dùng */}
         <Dropdown overlay={userMenu} trigger={['click']} className="dropdown-infor">
